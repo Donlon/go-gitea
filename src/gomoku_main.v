@@ -1,0 +1,348 @@
+`include "common.vh"
+`include "game_judger.vh"
+
+module gomoku_main(
+    input clk,
+    input buzzer_clk,
+    input led_scan_clk,
+    input kb_scan_clk,
+    input led_flicker_clk_slow,
+    input led_flicker_clk_fast,
+
+    input rst_n,
+
+    // KEY Pin define
+    input sw_power,
+    input btn_reset,
+    input btn_ok,
+
+    // Buzzer output
+    output buzzer,
+
+    // LED Pin define
+    output led_red_status,
+    output led_green_status,
+
+    /// LED Matrix
+    output [7:0] led_row,
+    output [7:0] led_col_red,
+    output [7:0] led_col_green,
+
+    // output [0:3] num_countdown,
+    // output [0:3] red_win_count,
+    // output [0:3] green_win_count,
+
+    // keyboard
+    output [3:0] keyboard_row,
+    input  [3:0] keyboard_col
+);
+    // === Game status ===
+    reg current_active_part;
+    reg [2:0] x_pos;
+    reg [2:0] y_pos;
+    wire [5:0] pos = {y_pos, x_pos};
+
+    reg [1:0] presseed_keys; // {y_pressed, x_pressed}
+
+    reg [5:0] piece_count;
+
+    localparam S_STOPPED     = 3'd0;
+    localparam S_STARTING    = 3'd1;
+    localparam S_RESET_STATE = 3'd2;
+    localparam S_WAIT_INPUT  = 3'd3;
+    localparam S_JUDGE       = 3'd4;
+    localparam S_END         = 3'd5;
+
+    reg [2:0] state, next_state;
+
+
+    // === RAM signals ===
+    reg ram_we;
+    reg [5:0] ram_wr_addr;
+    reg [1:0] ram_wr_data;
+
+    wire [5:0] ram_rd_addr_1;
+    wire [1:0] ram_rd_data_out_1;
+    wire [5:0] ram_rd_addr_2;
+    wire [1:0] ram_rd_data_out_2;
+
+    checkerboard_state_ram #(
+        .DATA_BITS(2),
+        .EDGE_ADDR_BITS(3) // 8x8 checkerboard
+    )
+    ram_inst (
+        .clk(clk),
+        .wr_en(ram_we),
+        
+        .wr_addr(ram_wr_addr),
+        .wr_data(ram_wr_data),
+
+        .rd_addr_1(ram_rd_addr_1),
+        .rd_data_out_1(ram_rd_data_out_1),
+
+        .rd_addr_2(ram_rd_addr_2),
+        .rd_data_out_2(ram_rd_data_out_2)
+    );
+
+    // === Mem reset ===
+    wire memrst_en;
+    wire memrst_done;
+    wire memrst_we;
+
+    wire [5:0] memrst_addr;
+    wire [1:0] memrst_data;
+
+    mem_reset memrst_inst(
+        .clk(clk),
+        .en(memrst_en), // Clock Enable
+        .rst_n(rst_n),  // Asynchronous reset active low
+        
+        .ram_we(memrst_we),
+        .ram_addr(memrst_addr),
+        .ram_data(memrst_data),
+        .done(memrst_done)
+        // .ready()
+    );
+
+    // === LED display signals ===
+    wire led_flicker_clk;
+
+    wire led_scanner_en;
+
+    wire led_screen_flicker_en;   // enable when state == S_STARTING
+
+    wire led_point_flicker_en;
+    wire [5:0] led_point_flicker_pos;
+    wire led_point_flicker_color;
+
+    // reg led_color_flicker_en;
+    // reg led_color_flicker_color;
+
+    display_led_scanner scanner_inst(
+        .scan_clk(led_scan_clk),
+        .clk(clk),
+        .en(led_scanner_en),
+        .rst_n(rst_n),
+
+        .flicker_clk(led_flicker_clk),
+
+        .screen_flicker_en(led_screen_flicker_en),
+
+        .point_flicker_en(led_point_flicker_en),
+        .point_flicker_pos(led_point_flicker_pos),
+        .point_flicker_color(led_point_flicker_color),
+
+        // .color_flicker_en(color_flicker_en),
+        // .color_flicker_color(color_flicker_color),
+
+        .ram_rd_addr(ram_rd_addr_1),
+        .ram_data(ram_rd_data_out_1),
+
+        .led_row(led_row),
+        .led_col_red(led_col_red),
+        .led_col_green(led_col_green)
+    );
+
+    // === keyboard signals ===
+    wire kb_en;
+
+    wire [3:0] kb_pressed_key;
+    wire kb_key_valid;
+    reg  kb_key_ready;
+
+    keyboard kb_inst(
+        .scan_clk(kb_scan_clk), // low speed scan clock
+        .clk(clk),
+        .en(kb_en), // enable
+        .rst_n(rst_n),
+
+        .keyboard_row(keyboard_row),
+        .keyboard_col(keyboard_col),
+
+        .pressed_index(kb_pressed_key),
+        .key_valid(kb_key_valid),
+        .key_ready(kb_key_ready)
+    );
+
+    // btn_ok test
+    reg btn_ok_r;
+    always @(posedge clk) begin : proc_btn_ok_r
+        btn_ok_r <= btn_ok;
+    end
+
+    wire btn_ok_down = btn_ok_r == 0 && btn_ok == 1; // capture key-down (lo to hi transition) only
+
+    // === Judger signals ===
+    wire judger_en;
+
+    wire [1:0] judger_result;
+    wire       judger_done;
+
+    game_judger judger_inst(
+        .clk(clk),    // Clock
+        .en(judger_en),
+        .rst_n(rst_n),
+        
+        .color(current_active_part),
+        .pos(pos),
+
+        .ram_rd_addr(ram_rd_addr_2),
+        .ram_data(ram_rd_data_out_2),
+
+        .result(judger_result),
+        .done(judger_done)
+    );
+
+    // Buzzer
+    wire buzzer_en;
+    assign buzzer = buzzer_clk & buzzer_en;
+
+    // FSM logic
+    always @(posedge clk or negedge rst_n) begin : proc_state
+        if (~rst_n) begin
+            state <= S_STOPPED;
+        end else begin
+            state <= next_state;
+        end
+    end
+
+    always @(*) begin : proc_next_state
+        next_state = state;
+        case (state)
+            S_STOPPED:
+                if (sw_power) next_state = S_STARTING;
+            S_STARTING:
+                if (1/*__flicker_done*/) next_state = S_RESET_STATE;
+            S_RESET_STATE:
+                if (memrst_done) next_state = S_WAIT_INPUT;
+            S_WAIT_INPUT:
+                if (presseed_keys == 2'b11 && btn_ok_down) // both x and y pos were input
+                    next_state = S_JUDGE;
+            S_JUDGE:
+                if (judger_done) begin
+                    if (judger_result == `JUDGER_WIN) begin
+                        next_state = S_END;
+                    end else begin
+                        next_state = S_WAIT_INPUT;
+                    end
+
+                    if (judger_result == `JUDGER_VALID && piece_count == 6'd63) begin
+                        next_state = S_END;
+                    end
+                end
+            default:
+                next_state = S_STOPPED;
+        endcase // state
+
+        if (btn_reset) begin
+            next_state = S_RESET_STATE;
+        end
+
+        if (~sw_power) begin
+            next_state = S_STOPPED;
+        end
+    end
+
+    // Game state transfer
+    always @(posedge clk or negedge rst_n) begin : proc_state_xfer
+        if (~rst_n) begin
+            current_active_part <= 0;
+            piece_count <= 0;
+        end else begin
+            if (state == S_RESET_STATE) begin
+                current_active_part <= 0;
+                piece_count <= 0;
+            end
+            if (state == S_JUDGE && judger_result == `JUDGER_VALID) begin
+                current_active_part <= ~current_active_part;
+                piece_count <= piece_count + 1'b1;
+            end
+        end
+    end
+
+    // Status LED output
+    assign led_red_status   = state == S_WAIT_INPUT && current_active_part == `SIDE_RED;
+    assign led_green_status = state == S_WAIT_INPUT && current_active_part == `SIDE_GREEN;
+
+    // LED display
+    assign led_screen_flicker_en = state == S_STARTING;
+    assign led_scanner_en = state != S_STOPPED && state != S_RESET_STATE;
+
+    assign led_point_flicker_en = current_active_part; // TODO...
+    assign led_point_flicker_color = current_active_part;
+
+    assign led_flicker_clk = state == S_STARTING ? led_flicker_clk_slow : led_flicker_clk_fast;
+
+    assign led_point_flicker_pos = pos;
+
+    // Keyboard
+    assign kb_en = state == S_WAIT_INPUT;
+
+    always @(posedge clk) begin : proc_keyboard
+        if (~rst_n) begin
+            kb_key_ready <= 0;
+        end else begin
+            if (kb_key_valid) begin
+                kb_key_ready <= 1;
+            end else begin
+                kb_key_ready <= 0;
+            end
+        end
+    end
+
+    // Judger
+    assign judger_en = state == S_JUDGE;
+
+    // Key down processor
+    always @(posedge clk or negedge rst_n) begin : proc_recv_keys
+        if (~rst_n) begin
+            presseed_keys <= 0;
+            {y_pos, x_pos} <= 0;
+        end else begin
+            if (kb_key_valid) begin
+                if (kb_pressed_key[3] == 0) begin // x-pos
+                    x_pos <= kb_pressed_key[2:0];
+                    presseed_keys[0] <= 1;
+                end else begin // y-pos
+                    y_pos <= kb_pressed_key[2:0];
+                    presseed_keys[1] <= 1;
+                end
+            end
+            if (state == S_JUDGE && judger_result == `JUDGER_VALID) begin
+                presseed_keys <= 0;
+            end
+        end
+    end
+
+    // Mem reset
+    assign memrst_en = state == S_RESET_STATE;
+
+    // RAM writing
+    reg ram_we_0;
+    always @(*) begin : proc_ram_write
+        if (state == S_RESET_STATE) begin
+            ram_we = memrst_we;
+            ram_wr_addr = memrst_addr;
+            ram_wr_data = memrst_data;
+        end else begin
+            ram_we = ram_we_0;
+            ram_wr_addr = pos;
+            ram_wr_data = current_active_part ? 2'b10 : 2'b01;
+        end
+    end
+
+    always @(posedge clk or negedge rst_n) begin : proc_ram_we
+        if (~rst_n) begin
+            ram_we_0 <= 0;
+        end else begin
+            if (state == S_JUDGE && judger_result == `JUDGER_VALID)
+                ram_we_0 <= 1; // write pos to mem
+            if (state == S_WAIT_INPUT || state == S_END)
+                ram_we_0 <= 0;
+        end
+    end
+
+    // Buzzer
+    assign buzzer_en = state == S_END;
+
+endmodule

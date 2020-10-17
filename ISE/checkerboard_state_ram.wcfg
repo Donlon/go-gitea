@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="D:/Links/Documents/DigitalCircuit/gomoku_game/ISE/checkerboard_state_ram_tb_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="checkerboard_state_ram_tb" />
+            <top_module name="glbl" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="8" />
+   <wvobject fp_name="/checkerboard_state_ram_tb/clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="CustomSignalColor">#ff00ff</obj_property>
+   </wvobject>
+   <wvobject fp_name="/checkerboard_state_ram_tb/wr_en" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">wr_en</obj_property>
+      <obj_property name="ObjectShortName">wr_en</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="CustomSignalColor">#ffa500</obj_property>
+   </wvobject>
+   <wvobject fp_name="/checkerboard_state_ram_tb/wr_addr" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">wr_addr[5:0]</obj_property>
+      <obj_property name="ObjectShortName">wr_addr[5:0]</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="CustomSignalColor">#00ffff</obj_property>
+   </wvobject>
+   <wvobject fp_name="/checkerboard_state_ram_tb/wr_data" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">wr_data[1:0]</obj_property>
+      <obj_property name="ObjectShortName">wr_data[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/checkerboard_state_ram_tb/rd_addr_1" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">rd_addr_1[5:0]</obj_property>
+      <obj_property name="ObjectShortName">rd_addr_1[5:0]</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="CustomSignalColor">#00ffff</obj_property>
+   </wvobject>
+   <wvobject fp_name="/checkerboard_state_ram_tb/rd_data_out_1" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">rd_data_out_1[1:0]</obj_property>
+      <obj_property name="ObjectShortName">rd_data_out_1[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/checkerboard_state_ram_tb/rd_addr_2" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">rd_addr_2[5:0]</obj_property>
+      <obj_property name="ObjectShortName">rd_addr_2[5:0]</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="CustomSignalColor">#00ffff</obj_property>
+   </wvobject>
+   <wvobject fp_name="/checkerboard_state_ram_tb/rd_data_out_2" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">rd_data_out_2[1:0]</obj_property>
+      <obj_property name="ObjectShortName">rd_data_out_2[1:0]</obj_property>
+   </wvobject>
+</wave_config>

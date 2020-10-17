@@ -1,0 +1,78 @@
+NET "clk" LOC = T8 | TNM_NET = sys_clk_pin;
+TIMESPEC TS_sys_clk_pin = PERIOD sys_clk_pin 50000 kHz;
+
+##
+NET rst_n                  LOC = L3 | IOSTANDARD = "LVCMOS33";         ## reset pushbutton
+
+##################################################################################
+#LED Pin define
+##################################################################################
+NET led<0>                LOC = P4 | IOSTANDARD = "LVCMOS33";       ## LED1
+NET led<1>                LOC = N5 | IOSTANDARD = "LVCMOS33";       ## LED2
+NET led<2>                LOC = P5 | IOSTANDARD = "LVCMOS33";       ## LED3
+NET led<3>                LOC = M6 | IOSTANDARD = "LVCMOS33";       ## LED4
+
+##################################################################################
+#KEY Pin define
+##################################################################################
+NET key<0>                LOC = C3 | IOSTANDARD = "LVCMOS33";       ## KEY1
+NET key<1>                LOC = D3 | IOSTANDARD = "LVCMOS33";       ## KEY2
+NET key<2>                LOC = E4 | IOSTANDARD = "LVCMOS33";       ## KEY3
+NET key<3>                LOC = E3 | IOSTANDARD = "LVCMOS33";       ## KEY4
+
+##################################################################################
+#buzzer Pin define
+##################################################################################
+NET buzzer                 LOC = J11 | IOSTANDARD = "LVCMOS33";         ##  Buzzer output
+
+##################################################################################
+#seg pin define
+##################################################################################
+NET seg_data<0>            LOC = C7 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET seg_data<1>            LOC = E6 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET seg_data<2>            LOC = C5 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET seg_data<3>            LOC = F7 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET seg_data<4>            LOC = D6 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET seg_data<5>            LOC = E7 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET seg_data<6>            LOC = D5 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET seg_data<7>            LOC = C6 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET seg_sel<0>             LOC = D9  | IOSTANDARD = "LVCMOS33" | SLEW=FAST;
+NET seg_sel<1>             LOC = E10 | IOSTANDARD = "LVCMOS33" | SLEW=FAST;
+NET seg_sel<2>             LOC = F10 | IOSTANDARD = "LVCMOS33" | SLEW=FAST;
+NET seg_sel<3>             LOC = F9 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET seg_sel<4>             LOC = E8 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET seg_sel<5>             LOC = D8 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+
+##################################################################################
+#LED Matrix
+##################################################################################
+NET led_row<0>             LOC = H16 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET led_row<1>             LOC = G16 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET led_row<2>             LOC = F15 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET led_row<3>             LOC = D11 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET led_row<4>             LOC = E11 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET led_row<5>             LOC = E15 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET led_row<6>             LOC = C16 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET led_row<7>             LOC = B16 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+
+NET led_col<0>             LOC = H15 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET led_col<1>             LOC = F16 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET led_col<2>             LOC = E16 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET led_col<3>             LOC = C10 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET led_col<4>             LOC = C9  | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET led_col<5>             LOC = D16 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET led_col<6>             LOC = C15 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET led_col<7>             LOC = B15 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+
+##################################################################################
+#keyboard
+##################################################################################
+NET keyboard_row<0>             LOC = R12 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET keyboard_row<1>             LOC = T14 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET keyboard_row<2>             LOC = T15 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET keyboard_row<3>             LOC = R16 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+
+NET keyboard_col<0>             LOC = P16 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET keyboard_col<1>             LOC = M15 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET keyboard_col<2>             LOC = L16 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;
+NET keyboard_col<3>             LOC = K16 | IOSTANDARD = "LVCMOS33"  | SLEW=FAST;

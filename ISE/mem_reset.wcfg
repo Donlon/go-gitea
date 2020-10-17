@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="D:/Links/Documents/DigitalCircuit/gomoku_game/ISE/mem_reset_tb_isim_beh1.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="mem_reset_tb" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="9" />
+   <wvobject fp_name="/mem_reset_tb/clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="CustomSignalColor">#ff00ff</obj_property>
+   </wvobject>
+   <wvobject fp_name="/mem_reset_tb/rst_n" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">rst_n</obj_property>
+      <obj_property name="ObjectShortName">rst_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/mem_reset_tb/en" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">en</obj_property>
+      <obj_property name="ObjectShortName">en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/mem_reset_tb/ram_we" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ram_we</obj_property>
+      <obj_property name="ObjectShortName">ram_we</obj_property>
+   </wvobject>
+   <wvobject fp_name="/mem_reset_tb/uut/ram_addr" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ram_addr[5:0]</obj_property>
+      <obj_property name="ObjectShortName">ram_addr[5:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/mem_reset_tb/ram_data" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ram_data[1:0]</obj_property>
+      <obj_property name="ObjectShortName">ram_data[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/mem_reset_tb/uut/state" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">state[0:0]</obj_property>
+      <obj_property name="ObjectShortName">state[0:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/mem_reset_tb/done" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">done</obj_property>
+      <obj_property name="ObjectShortName">done</obj_property>
+   </wvobject>
+   <wvobject fp_name="/mem_reset_tb/ram_write_src" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ram_write_src</obj_property>
+      <obj_property name="ObjectShortName">ram_write_src</obj_property>
+   </wvobject>
+</wave_config>

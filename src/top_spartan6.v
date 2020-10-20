@@ -22,8 +22,8 @@ module top_spartan6(
     output [7:0] led_col_green,
 
     // keyboard
-    output [3:0] keyboard_row,
-    input [3:0] keyboard_col
+    output [3:0] keyboard_col,
+    input  [3:0] keyboard_row
 );
     // Clock
     wire led_scan_clk;

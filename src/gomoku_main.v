@@ -33,8 +33,8 @@ module gomoku_main(
     // output [0:3] green_win_count,
 
     // keyboard
-    output [3:0] keyboard_row,
-    input  [3:0] keyboard_col
+    output [3:0] keyboard_col,
+    input  [3:0] keyboard_row
 );
     // === Game status ===
     reg current_active_part;
@@ -45,7 +45,9 @@ module gomoku_main(
     reg [1:0] presseed_keys; // {y_pressed, x_pressed}
 
     reg [5:0] piece_count;
+    reg screen_flicker_done;
 
+    // FSM
     localparam S_STOPPED     = 3'd0;
     localparam S_STARTING    = 3'd1;
     localparam S_RESET_STATE = 3'd2;
@@ -54,7 +56,6 @@ module gomoku_main(
     localparam S_END         = 3'd5;
 
     reg [2:0] state, next_state;
-
 
     // === RAM signals ===
     reg ram_we;
@@ -73,7 +74,7 @@ module gomoku_main(
     ram_inst (
         .clk(clk),
         .wr_en(ram_we),
-        
+
         .wr_addr(ram_wr_addr),
         .wr_data(ram_wr_data),
 
@@ -96,12 +97,12 @@ module gomoku_main(
         .clk(clk),
         .en(memrst_en), // Clock Enable
         .rst_n(rst_n),  // Asynchronous reset active low
-        
+
         .ram_we(memrst_we),
         .ram_addr(memrst_addr),
         .ram_data(memrst_data),
+
         .done(memrst_done)
-        // .ready()
     );
 
     // === LED display signals ===
@@ -166,11 +167,13 @@ module gomoku_main(
 
     // btn_ok test
     reg btn_ok_r;
+    reg btn_ok_rr;
     always @(posedge clk) begin : proc_btn_ok_r
         btn_ok_r <= btn_ok;
+        btn_ok_rr <= btn_ok_r;
     end
 
-    wire btn_ok_down = btn_ok_r == 0 && btn_ok == 1; // capture key-down (lo to hi transition) only
+    wire btn_ok_down = btn_ok_rr == 0 && btn_ok_r == 1; // capture key-down (lo to hi transition) only
 
     // === Judger signals ===
     wire judger_en;
@@ -182,7 +185,7 @@ module gomoku_main(
         .clk(clk),    // Clock
         .en(judger_en),
         .rst_n(rst_n),
-        
+
         .color(current_active_part),
         .pos(pos),
 
@@ -212,7 +215,7 @@ module gomoku_main(
             S_STOPPED:
                 if (sw_power) next_state = S_STARTING;
             S_STARTING:
-                if (1/*__flicker_done*/) next_state = S_RESET_STATE;
+                if (screen_flicker_done) next_state = S_RESET_STATE;
             S_RESET_STATE:
                 if (memrst_done) next_state = S_WAIT_INPUT;
             S_WAIT_INPUT:
@@ -232,7 +235,7 @@ module gomoku_main(
                 end
             default:
                 next_state = S_STOPPED;
-        endcase // state
+        endcase
 
         if (btn_reset) begin
             next_state = S_RESET_STATE;
@@ -243,17 +246,44 @@ module gomoku_main(
         end
     end
 
+    reg [1:0] screen_flicker_count;
+    reg screen_flicker_last_state_r;
+    always @(posedge clk) begin : proc_screen_flicker_last_state_r
+        screen_flicker_last_state_r <= led_flicker_clk;
+    end
+
+    // Screen flicker
+    always @(posedge clk or negedge rst_n) begin : proc_screen_flicker_done
+        if(~rst_n) begin
+            screen_flicker_count <= 0;
+        end else begin
+            if (state != S_STARTING && next_state == S_STARTING) begin
+                screen_flicker_count <= 0;
+            end
+            if (state == S_STARTING) begin
+                if (screen_flicker_last_state_r == 0 && led_flicker_clk == 1) begin
+					 screen_flicker_count <= screen_flicker_count + 1'b1;
+                end
+            end
+        end
+    end
+    always @(*) begin : proc_
+        screen_flicker_done <= screen_flicker_count == 3;
+    end
+
+    wire judger_done_res_valid = state == S_JUDGE && judger_done && judger_result == `JUDGER_VALID;
+
     // Game state transfer
     always @(posedge clk or negedge rst_n) begin : proc_state_xfer
         if (~rst_n) begin
-            current_active_part <= 0;
+            current_active_part <= `SIDE_RED;
             piece_count <= 0;
         end else begin
             if (state == S_RESET_STATE) begin
-                current_active_part <= 0;
+                current_active_part <= `SIDE_RED;
                 piece_count <= 0;
             end
-            if (state == S_JUDGE && judger_result == `JUDGER_VALID) begin
+            if (judger_done_res_valid) begin
                 current_active_part <= ~current_active_part;
                 piece_count <= piece_count + 1'b1;
             end
@@ -268,7 +298,7 @@ module gomoku_main(
     assign led_screen_flicker_en = state == S_STARTING;
     assign led_scanner_en = state != S_STOPPED && state != S_RESET_STATE;
 
-    assign led_point_flicker_en = current_active_part; // TODO...
+    assign led_point_flicker_en = state == S_WAIT_INPUT && presseed_keys == 2'b11;
     assign led_point_flicker_color = current_active_part;
 
     assign led_flicker_clk = state == S_STARTING ? led_flicker_clk_slow : led_flicker_clk_fast;
@@ -308,7 +338,7 @@ module gomoku_main(
                     presseed_keys[1] <= 1;
                 end
             end
-            if (state == S_JUDGE && judger_result == `JUDGER_VALID) begin
+            if (judger_done_res_valid) begin
                 presseed_keys <= 0;
             end
         end
@@ -319,6 +349,7 @@ module gomoku_main(
 
     // RAM writing
     reg ram_we_0;
+    reg [1:0] ram_wr_data_0;
     always @(*) begin : proc_ram_write
         if (state == S_RESET_STATE) begin
             ram_we = memrst_we;
@@ -327,16 +358,19 @@ module gomoku_main(
         end else begin
             ram_we = ram_we_0;
             ram_wr_addr = pos;
-            ram_wr_data = current_active_part ? 2'b10 : 2'b01;
+            ram_wr_data = ram_wr_data_0;
         end
     end
 
     always @(posedge clk or negedge rst_n) begin : proc_ram_we
         if (~rst_n) begin
             ram_we_0 <= 0;
+            ram_wr_data_0 <= 0; 
         end else begin
-            if (state == S_JUDGE && judger_result == `JUDGER_VALID)
+            if (judger_done_res_valid) begin
                 ram_we_0 <= 1; // write pos to mem
+                ram_wr_data_0 <= current_active_part ? 2'b10 : 2'b01;
+            end
             if (state == S_WAIT_INPUT || state == S_END)
                 ram_we_0 <= 0;
         end

@@ -16,7 +16,7 @@ module mem_reset (
 
 	reg [0:0] state, next_state;
 
-	always @(*) begin : proc_
+	always @(*) begin : proc_next_state
 		next_state <= S_IDLE;
 
 		case (state)

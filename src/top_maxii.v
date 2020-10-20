@@ -1,10 +1,8 @@
 module top_maxii(
     input clk,
 
-    input rst,
-
     // KEY Pin define
-    input [3:0] key,
+    input [7:0] btn,
 
     input [7:0] switch,
 
@@ -12,11 +10,11 @@ module top_maxii(
     output buzzer,
 
     // LED Pin define
-    output [3:0] led,
+    output [15:0] led,
 
     // seg pin define
-    output [7:0] seg_data,
-    output [5:0] seg_sel,
+    // output [7:0] seg_data,
+    // output [5:0] seg_sel,
 
     // LED Matrix
     output [7:0] led_row,
@@ -24,11 +22,9 @@ module top_maxii(
     output [7:0] led_col_green,
 
     // keyboard
-    output [3:0] keyboard_row,
-    input  [3:0] keyboard_col
+    output [3:0] keyboard_col,
+    input  [3:0] keyboard_row
 );
-    wire rst_n = rst;
-    
     // Clock
     wire led_scan_clk;
     wire kb_scan_clk;
@@ -38,9 +34,10 @@ module top_maxii(
     wire led_flicker_clk_fast;
 
     // Press buttons
-    wire key_power = key[0];
-    wire key_reset = key[1];
-    wire key_ok    = key[2];
+    wire key_reset = btn[0];
+    wire key_ok    = btn[7];
+    wire rst_n     = ~btn[6];
+    
 
     wire sw_power  = switch[7];
 
@@ -67,6 +64,8 @@ module top_maxii(
 
     assign led[0] = led_red_status;
     assign led[1] = led_green_status;
+    assign led[6] = led_flicker_clk_slow;
+    assign led[7] = led_flicker_clk_fast;
 
     // === Clock generator ===
     clock_gen #(
@@ -116,5 +115,7 @@ module top_maxii(
         .keyboard_row(keyboard_row),
         .keyboard_col(keyboard_col)
     );
+    
+    //assign {led[15], led[14]} = main.state;
 
 endmodule

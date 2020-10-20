@@ -22,11 +22,12 @@ module display_led_scanner (
 	output reg [7:0] led_col_red,
 	output reg [7:0] led_col_green
 );
+	wire rst_n_ = rst_n && en;
 	
-	reg[7:0] red_line_buffer;
-	reg[7:0] green_line_buffer;
+	reg [7:0] red_line_buffer;
+	reg [7:0] green_line_buffer;
 
-	reg[2:0] current_scan_row;
+	reg [2:0] current_scan_row;
 
 	reg current_frame_state, last_frame_state;
 
@@ -36,8 +37,8 @@ module display_led_scanner (
 
 	assign ram_rd_addr = {current_scan_row, mem_read_bit};
 
-	always @(posedge scan_clk or negedge rst_n) begin : proc_
-		if (~rst_n) begin
+	always @(posedge scan_clk or negedge rst_n_) begin : proc_
+		if (~rst_n_) begin
 			current_scan_row <= 3'b111;
 			current_frame_state <= 0;
 			led_col_red <= 0;
@@ -47,11 +48,11 @@ module display_led_scanner (
 			current_frame_state <= ~current_frame_state;
 			if (screen_flicker_en) begin
 				if (flicker_state) begin
-					led_col_red   <= 8'b11111111;
-					led_col_green <= 8'b00000000;
+					led_col_red   <= {8{1'b1}};
+					led_col_green <= {8{1'b0}};
 				end else begin
-					led_col_red   <= 8'b00000000;
-					led_col_green <= 8'b11111111;
+					led_col_red   <= {8{1'b0}};
+					led_col_green <= {8{1'b1}};
 				end
 			end else begin
 				led_col_red   <= red_line_buffer;
@@ -60,11 +61,11 @@ module display_led_scanner (
 		end
 	end
 
-	wire led_row_injection = current_scan_row == 3'b111;
+	wire led_row_injection = current_scan_row != 3'b111;
 
-	always @(posedge scan_clk or negedge rst_n) begin
-		if (~rst_n) begin
-			led_row <= 8'b00000000;
+	always @(posedge scan_clk or negedge rst_n_) begin
+		if (~rst_n_) begin
+			led_row <= {8{1'b1}};
 		end else begin
 			led_row <= {led_row_injection, led_row[7:1]};
 		end
@@ -92,8 +93,8 @@ module display_led_scanner (
 		// end
 	end
 
-	always @(posedge clk or negedge rst_n) begin : proc_store
-		if (~rst_n) begin
+	always @(posedge clk or negedge rst_n_) begin : proc_store
+		if (~rst_n_) begin
 			last_frame_state <= 0;
 		end else begin
 			if (~screen_flicker_en && mem_read_bit != 3'b111) begin

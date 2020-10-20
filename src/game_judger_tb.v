@@ -38,18 +38,18 @@ module game_judger_tb;
 
     // Instantiate the Unit Under Test (UUT)
     game_judger uut (
-        .clk(clk), 
+        .clk(clk),
         .en(judger_en),
 
-        .rst_n(rst_n), 
+        .rst_n(rst_n),
 
         .color(judger_color),
-        .pos(judger_pos), 
+        .pos(judger_pos),
 
-        .ram_rd_addr(ram_rd_addr), 
-        .ram_data(ram_rd_data_out), 
+        .ram_rd_addr(ram_rd_addr),
+        .ram_data(ram_rd_data_out),
 
-        .result(judger_result), 
+        .result(judger_result),
         .done(judger_done)
     );
 
@@ -503,6 +503,6 @@ module game_judger_tb;
         end
         $display("tested: %0d, failed: %0d", tested_count, error_count);
 
-        $finish;
+        $exit;
     end
 endmodule

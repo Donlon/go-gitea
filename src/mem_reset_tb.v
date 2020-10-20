@@ -146,7 +146,7 @@ module mem_reset_tb;
         if (~memrst_done) begin
 	        $display("=== ERROR: mem_reset timed out! ===");
 	        $finish;
-	    end;
+	    end
     end
       
 endmodule

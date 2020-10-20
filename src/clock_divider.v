@@ -13,7 +13,7 @@ module clock_divider #(
         for (temp = 0; value > 0; temp = temp + 1) begin
             value = value >> 1; 
         end
-        clog2 = temp;
+            clog2 = temp;
         end 
     endfunction 
 

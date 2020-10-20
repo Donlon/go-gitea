@@ -49,6 +49,26 @@ set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR "-1"
 set_global_assignment -name POWER_EXT_SUPPLY_VOLTAGE_TO_REGULATOR 3.3V
 set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
 set_location_assignment PIN_18 -to clk
+set_location_assignment PIN_60 -to buzzer
+set_location_assignment PIN_80 -to led[0]
+set_location_assignment PIN_79 -to led[1]
+set_location_assignment PIN_78 -to led[2]
+set_location_assignment PIN_77 -to led[3]
+set_location_assignment PIN_76 -to led[4]
+set_location_assignment PIN_75 -to led[5]
+set_location_assignment PIN_74 -to led[6]
+set_location_assignment PIN_73 -to led[7]
+set_location_assignment PIN_129 -to switch[5]
+set_location_assignment PIN_127 -to switch[6]
+set_location_assignment PIN_125 -to switch[7]
+set_location_assignment PIN_61 -to btn[0]
+set_location_assignment PIN_20 -to btn[1]
+set_location_assignment PIN_89 -to btn[2]
+set_location_assignment PIN_91 -to btn[3]
+set_location_assignment PIN_121 -to btn[4]
+set_location_assignment PIN_122 -to btn[5]
+set_location_assignment PIN_123 -to btn[6]
+set_location_assignment PIN_124 -to btn[7]
 set_location_assignment PIN_1 -to led_row[7]
 set_location_assignment PIN_2 -to led_row[6]
 set_location_assignment PIN_3 -to led_row[5]
@@ -81,13 +101,6 @@ set_location_assignment PIN_117 -to keyboard_col[0]
 set_location_assignment PIN_114 -to keyboard_row[3]
 set_location_assignment PIN_113 -to keyboard_row[2]
 set_location_assignment PIN_112 -to keyboard_row[1]
-set_location_assignment PIN_60 -to buzzer
-set_location_assignment PIN_61 -to btn_reset
-set_location_assignment PIN_20 -to btn_ok
-set_location_assignment PIN_62 -to rst_n
-set_location_assignment PIN_80 -to led_green_status
-set_location_assignment PIN_79 -to led_red_status
-set_location_assignment PIN_132 -to sw_power
 set_global_assignment -name VERILOG_FILE ../src/checkerboard_state_ram.v
 set_global_assignment -name VERILOG_FILE ../src/checkerboard_state_ram_tb.v
 set_global_assignment -name VERILOG_FILE ../src/clock_divider.v
@@ -103,7 +116,6 @@ set_global_assignment -name VERILOG_FILE ../src/keyboard.v
 set_global_assignment -name VERILOG_FILE ../src/keyboard_tb.v
 set_global_assignment -name VERILOG_FILE ../src/mem_reset.v
 set_global_assignment -name VERILOG_FILE ../src/mem_reset_tb.v
-set_global_assignment -name VERILOG_FILE ../src/top.v
 set_global_assignment -name VERILOG_FILE ../src/top_maxii.v
 set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (Verilog)"
 set_global_assignment -name EDA_TIME_SCALE "1 ps" -section_id eda_simulation

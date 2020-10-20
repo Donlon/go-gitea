@@ -78,7 +78,7 @@ module top_spartan6(
     clock_gen_inst(
         .clk_in(clk),
         .rst_n(rst_n),  // Asynchronous reset active low
-        
+
         .clk_2k(led_scan_clk),
         .clk_100Hz(kb_scan_clk),
         .clk_2Hz(led_flicker_clk_slow),

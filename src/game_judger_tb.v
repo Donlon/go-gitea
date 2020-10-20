@@ -397,7 +397,7 @@ module game_judger_tb;
     integer col = 0;
     integer exec_y = -1;
     integer exec_x = -1;
-    
+
     task do_testcase;
             input integer testcase_no;
             input [0:TESTCASE_DATA_SIZE - 1] data;
@@ -424,19 +424,19 @@ module game_judger_tb;
             end
 
             @(posedge clk);
-            
+
             ram_we = 0;
             judger_pos = {exec_y[2:0], exec_x[2:0]};
             judger_color = color;
 
             @(posedge clk);
-            
+
             judger_en = 1;
 
             wait (judger_done == 1);
 
             @(posedge clk);
-            
+
             judger_en = 0;
 
             if (judger_result == expected_result) begin
@@ -465,7 +465,7 @@ module game_judger_tb;
         #3;
 
         rst_n = 1;
-        
+
         for (testcase_index = 1; testcase_index <= 25; testcase_index = testcase_index + 1) begin
             case (testcase_index)
                 1:  do_testcase(testcase_index, testcase1_data, testcase1_color, testcase1_expected_res);

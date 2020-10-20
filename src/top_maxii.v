@@ -37,7 +37,6 @@ module top_maxii(
     wire key_reset = btn[0];
     wire key_ok    = btn[7];
     wire rst_n     = ~btn[6];
-    
 
     wire sw_power  = switch[7];
 
@@ -74,7 +73,7 @@ module top_maxii(
     clock_gen_inst(
         .clk_in(clk),
         .rst_n(rst_n),  // Asynchronous reset active low
-        
+
         .clk_2k(led_scan_clk),
         .clk_100Hz(kb_scan_clk),
         .clk_2Hz(led_flicker_clk_slow),
@@ -115,7 +114,7 @@ module top_maxii(
         .keyboard_row(keyboard_row),
         .keyboard_col(keyboard_col)
     );
-    
+
     //assign {led[15], led[14]} = main.state;
 
 endmodule

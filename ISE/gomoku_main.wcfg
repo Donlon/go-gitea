@@ -240,10 +240,6 @@
          <obj_property name="ElementShortName">ram_wr_addr[5:0]</obj_property>
          <obj_property name="ObjectShortName">ram_wr_addr[5:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/gomoku_main_tb/uut/ram_wr_data_0" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">ram_wr_data_0</obj_property>
-         <obj_property name="ObjectShortName">ram_wr_data_0</obj_property>
-      </wvobject>
       <wvobject fp_name="/gomoku_main_tb/uut/ram_wr_data" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">ram_wr_data[1:0]</obj_property>
          <obj_property name="ObjectShortName">ram_wr_data[1:0]</obj_property>

@@ -21,7 +21,7 @@ module clock_divider #(
 
     reg[COUNT_BITS - 1:0] count;
 
-    always @(posedge clk or negedge rst_n) begin : proc_
+    always @(posedge clk or negedge rst_n) begin : proc_count
         if (~rst_n) begin
             count <= 0;
             clk_out <= 0;

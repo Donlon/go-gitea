@@ -503,6 +503,6 @@ module game_judger_tb;
         end
         $display("tested: %0d, failed: %0d", tested_count, error_count);
 
-        $exit;
+        $stop;
     end
 endmodule

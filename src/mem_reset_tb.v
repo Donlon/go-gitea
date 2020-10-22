@@ -111,7 +111,7 @@ module mem_reset_tb;
         ram_write_src = 1;
         memrst_en = 1;
 
-        repeat(1) @(posedge done);
+        wait (done == 1);
 
         $display("mem_reset done.");
         memrst_done = 1;
@@ -136,7 +136,7 @@ module mem_reset_tb;
             $display("== FAILED: error_count: %d ==", error_count);
         end
 
-        $finish;
+        $stop;
         // Add stimulus here
 
     end
@@ -145,7 +145,7 @@ module mem_reset_tb;
         #10000;
         if (~memrst_done) begin
             $display("=== ERROR: mem_reset timed out! ===");
-            $finish;
+            $stop;
         end
     end
 

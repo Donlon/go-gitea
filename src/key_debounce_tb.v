@@ -66,8 +66,8 @@ module key_debounce_tb;
             key = 0;
             #50.6;
         end
-    $finish();
 
+        $stop();
     end
 
 endmodule

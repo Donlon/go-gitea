@@ -163,7 +163,7 @@ module keyboard_tb;
 
         // Add stimulus here
 
-        $finish();
+        $stop();
 
     end
 

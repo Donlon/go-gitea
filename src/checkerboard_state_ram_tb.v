@@ -112,7 +112,7 @@ module checkerboard_state_ram_tb;
 
         #100;
 
-        $finish;
+        $stop;
     end
 
 endmodule

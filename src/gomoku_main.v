@@ -34,7 +34,13 @@ module gomoku_main(
 
     // keyboard
     output [3:0] keyboard_col,
-    input  [3:0] keyboard_row
+    input  [3:0] keyboard_row,
+
+    // SPI interface
+    output spi_clk,
+    output spi_mem_cs,
+    input  spi_si,
+    output spi_so
 );
     // === Game status ===
     reg current_active_part;
@@ -58,31 +64,61 @@ module gomoku_main(
     reg [2:0] state, next_state;
 
     // === RAM signals ===
-    reg ram_we;
-    reg [5:0] ram_wr_addr;
-    reg [1:0] ram_wr_data;
+    // reg ram_we;
+    // reg [5:0] ram_wr_addr;
+    // reg [1:0] ram_wr_data;
 
-    wire [5:0] ram_rd_addr_1;
-    wire [1:0] ram_rd_data_out_1;
-    wire [5:0] ram_rd_addr_2;
-    wire [1:0] ram_rd_data_out_2;
+    // wire [5:0] ram_rd_addr_1;
+    // wire [1:0] ram_rd_data_out_1;
+    // wire [5:0] ram_rd_addr_2;
+    // wire [1:0] ram_rd_data_out_2;
 
-    checkerboard_state_ram #(
-        .DATA_BITS(2),
-        .EDGE_ADDR_BITS(3) // 8x8 checkerboard
-    )
-    ram_inst (
+    wire mem_req_1;
+    wire mem_grant_1;
+    wire mem_req_2;
+    wire mem_grant_2;
+    wire mem_req_3;
+    wire mem_grant_3;
+
+    reg mem_we_1;
+    reg [5:0] mem_addr_1;
+    reg [1:0] mem_wr_data_1;
+
+    wire [5:0] mem_addr_2;
+    wire [1:0] mem_data_2;
+
+    wire [5:0] mem_addr_3;
+    wire [1:0] mem_data_3;
+
+    wire mem_valid;
+
+    spi_mem spi_mem_inst (
         .clk(clk),
-        .wr_en(ram_we),
-
-        .wr_addr(ram_wr_addr),
-        .wr_data(ram_wr_data),
-
-        .rd_addr_1(ram_rd_addr_1),
-        .rd_data_out_1(ram_rd_data_out_1),
-
-        .rd_addr_2(ram_rd_addr_2),
-        .rd_data_out_2(ram_rd_data_out_2)
+        .rst_n(rst_n),
+        
+        .req_1(mem_req_1),
+        .grant_1(mem_grant_1),
+        .req_2(mem_req_2),
+        .grant_2(mem_grant_2),
+        .req_3(mem_req_3),
+        .grant_3(mem_grant_3),
+        
+        .we_1(mem_we_1),
+        .addr_1(mem_addr_1),
+        .wr_data_1(mem_wr_data_1),
+        
+        .addr_2(mem_addr_2),
+        .data_2(mem_data_2),
+        
+        .addr_3(mem_addr_3),
+        .data_3(mem_data_3),
+        
+        .spi_clk(spi_clk),
+        .spi_cs(spi_mem_cs),
+        .spi_si(spi_si),
+        .spi_so(spi_so),
+        
+        .valid(mem_valid)
     );
 
     // === Mem reset ===
@@ -97,6 +133,9 @@ module gomoku_main(
         .clk(clk),
         .en(memrst_en), // Clock Enable
         .rst_n(rst_n),  // Asynchronous reset active low
+
+        .mem_req(),
+        .mem_grant(),
 
         .ram_we(memrst_we),
         .ram_addr(memrst_addr),
@@ -136,8 +175,12 @@ module gomoku_main(
         // .color_flicker_en(color_flicker_en),
         // .color_flicker_color(color_flicker_color),
 
-        .ram_rd_addr(ram_rd_addr_1),
-        .ram_data(ram_rd_data_out_1),
+        .mem_req(),
+        .mem_grant(),
+        .mem_valid(mem_valid),
+
+        .mem_rd_addr(),
+        .mem_data(),
 
         .led_row(led_row),
         .led_col_red(led_col_red),
@@ -352,13 +395,13 @@ module gomoku_main(
     reg [1:0] ram_wr_data_0;
     always @(*) begin : proc_ram_write
         if (state == S_RESET_STATE) begin
-            ram_we = memrst_we;
-            ram_wr_addr = memrst_addr;
-            ram_wr_data = memrst_data;
+            mem_we_1 = memrst_we;
+            mem_addr_1 = memrst_addr;
+            mem_wr_data_1 = memrst_data;
         end else begin
-            ram_we = ram_we_0;
-            ram_wr_addr = pos;
-            ram_wr_data = ram_wr_data_0;
+            mem_we_1 = ram_we_0;
+            mem_addr_1 = pos;
+            mem_wr_data_1 = ram_wr_data_0;
         end
     end
 

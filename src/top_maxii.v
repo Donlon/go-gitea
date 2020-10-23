@@ -23,7 +23,13 @@ module top_maxii(
 
     // keyboard
     output [3:0] keyboard_col,
-    input  [3:0] keyboard_row
+    input  [3:0] keyboard_row,
+
+    // SPI interface
+    output spi_clk,
+    output spi_mem_cs,
+    input  spi_si,
+    output spi_so
 );
     // Clock
     wire led_scan_clk;
@@ -112,7 +118,13 @@ module top_maxii(
 
         // keyboard
         .keyboard_row(keyboard_row),
-        .keyboard_col(keyboard_col)
+        .keyboard_col(keyboard_col),
+
+        // SPI signals
+        .spi_clk(spi_clk),
+        .spi_mem_cs(spi_mem_cs),
+        .spi_si(spi_si),
+        .spi_so(spi_so)
     );
 
     //assign {led[15], led[14]} = main.state;

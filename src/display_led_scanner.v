@@ -15,8 +15,12 @@ module display_led_scanner (
     // input color_flicker_en,
     // input color_flicker_color,
 
-    output [5:0] ram_rd_addr,
-    input [1:0] ram_data,
+    output reg mem_req,
+    input      mem_grant,
+    input      mem_valid,
+
+    output reg mem_rd_addr,
+    input      mem_data,
 
     output reg [7:0] led_row,
     output reg [7:0] led_col_red,
@@ -35,7 +39,7 @@ module display_led_scanner (
 
     reg [2:0] mem_read_bit;
 
-    assign ram_rd_addr = {current_scan_row, mem_read_bit};
+    assign mem_rd_addr = {current_scan_row, mem_read_bit};
 
     always @(posedge scan_clk or negedge rst_n_) begin : proc_
         if (~rst_n_) begin
@@ -74,7 +78,7 @@ module display_led_scanner (
     reg patched_ram_data_red, patched_ram_data_green;
 
     always @(*) begin : proc_rd_patch
-        {patched_ram_data_red, patched_ram_data_green} = ram_data;
+        {patched_ram_data_red, patched_ram_data_green} = mem_data;
 
         if (point_flicker_en && point_flicker_pos == {current_scan_row, mem_read_bit}) begin
             if (point_flicker_color == 1) begin

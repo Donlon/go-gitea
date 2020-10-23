@@ -50,8 +50,12 @@ module spi_mem (
 
     wire grant = grant_1 || grant_2;
     wire rd_en = ~we_1;
-    wire wr_data = wr_data_1;
+    wire [1:0] wr_data = wr_data_1;
     wire [5:0] addr = (grant_1 & addr_1) | (grant_2 & addr_2) | (grant_3 & addr_3);
+
+    reg [7:0] rd_data;
+    assign data_2 = grant_2 & {2{rd_data}};
+    assign data_3 = grant_3 & {2{rd_data}};
     
     // wire spi_clk_rising;
     // wire spi_clk_falling;
@@ -77,25 +81,25 @@ module spi_mem (
         end
     end
 
-    // always @(*) begin : proc_load_data
-    //     case (byte_count)
-    //         2'd0:    spi_tx_byte = fm25l16_op;
-    //         2'd1:    spi_tx_byte = 0;
-    //         2'd2:    spi_tx_byte = {0, addr};
-    //         2'd3:    spi_tx_byte = rd_en ? 0 : wr_data;
-    //         default: spi_tx_byte = 0;
-    //     endcase
-    // end
-
     always @(*) begin : proc_load_data
-        case (next_byte_count)
-            2'd0:    spi_tx_byte = 8'h11;
-            2'd1:    spi_tx_byte = 8'h22;
-            2'd2:    spi_tx_byte = 8'h33;
-            2'd3:    spi_tx_byte = 8'h44;
-            default: spi_tx_byte = 8'hff;
+        case (byte_count)
+            2'd0:    spi_tx_byte = fm25l16_op;
+            2'd1:    spi_tx_byte = 0;
+            2'd2:    spi_tx_byte = {2'b0, addr};
+            2'd3:    spi_tx_byte = rd_en ? 8'b0 : wr_data;
+            default: spi_tx_byte = 0;
         endcase
     end
+
+    // always @(*) begin : proc_load_data
+    //     case (byte_count)
+    //         2'd0:    spi_tx_byte = 8'h11;
+    //         2'd1:    spi_tx_byte = 8'h22;
+    //         2'd2:    spi_tx_byte = 8'h33;
+    //         2'd3:    spi_tx_byte = 8'h44;
+    //         default: spi_tx_byte = 8'hff;
+    //     endcase
+    // end
 
     localparam S_IDLE  = 2'b00;
     localparam S_WRITE = 2'b01;
@@ -171,7 +175,7 @@ module spi_mem (
 
     always @(posedge clk or negedge rst_n) begin : proc_bit_count
         if(~rst_n) begin
-            bit_count <= 3'b111;
+            bit_count <= 0;
         end else begin
             if (state != S_IDLE && spi_clk /*spi_clk_rising*/) begin
                 bit_count <= next_bit_count;
@@ -196,8 +200,8 @@ module spi_mem (
         end
     end
 
-    wire spi_load_data = (/*state == S_IDLE ||*/ (bit_count == 3'b111 && ~spi_clk))
-                                  && next_state == S_WRITE;
+    wire spi_load_data = (state == S_IDLE || (bit_count == 3'b111 && spi_clk))
+                                  && next_state == S_WRITE; // delayed...
 
     // Transmission logic
     always @(posedge clk or negedge rst_n) begin : proc_tx_buffer
@@ -206,8 +210,7 @@ module spi_mem (
         end else begin
             if (spi_load_data) begin // load data
                 tx_buffer <= spi_tx_byte;
-            end
-            if (state == S_WRITE && spi_clk/*spi_clk_rising*/) begin
+            end else if (state == S_WRITE && spi_clk/*spi_clk_rising*/) begin
                 tx_buffer <= {tx_buffer[6:0], 1'b0}; // MSB first
             end
         end
@@ -219,8 +222,9 @@ module spi_mem (
             rx_buffer <= 0;
         end else begin
             if (state == S_READ && ~spi_clk) begin // read on rising edge of spi_clk
-                rx_buffer <= {rx_buffer, spi_si}; // MSB first
+                rx_buffer <= {rx_buffer[6:0], spi_si}; // MSB first
             end
+            rd_data <= rx_buffer; // TODO:...
         end
     end
 

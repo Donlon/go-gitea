@@ -17,7 +17,7 @@ module clock_divider #(
         end 
     endfunction 
 
-    localparam COUNT_BITS = clog2(DIVISOR / 2 - 1) + 1;
+    localparam COUNT_BITS = clog2(DIVISOR / 2);
 
     reg[COUNT_BITS - 1:0] count;
 

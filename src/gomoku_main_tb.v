@@ -5,6 +5,7 @@ module gomoku_main_tb;
     // Inputs
     reg clk;
     reg buzzer_clk;
+    reg buzzer_clk_2;
     reg led_scan_clk;
     reg kb_scan_clk;
     reg led_flicker_clk_slow;
@@ -67,16 +68,33 @@ module gomoku_main_tb;
         is_key_pressed <= 0;
     endtask
 
+    task task_enter_position(integer x, integer y);
+        begin
+            task_press_key(x[2:0] + 8);
+            #1000 task_key_up();
+
+            #4000;
+
+            task_press_key(y[2:0]);
+            #1000 task_key_up();
+
+            #6000;
+
+            btn_ok = 1;
+            #500 btn_ok = 0;
+        end
+    endtask
+
     always @(*) begin
         col_keycode  <= keycode_encode(keyboard_col);
-        row_keyarray <= keycode_decode(key_code[1:0]);
+        row_keyarray <= keycode_decode(key_code[3:2]);
     end
 
     always @(*) begin
         if (~is_key_pressed) begin
             keyboard_row <= 4'b1111;
         end else begin
-            if (col_keycode == key_code[3:2]) begin
+            if (col_keycode == key_code[1:0]) begin
                 keyboard_row <= row_keyarray;
             end else begin
                 keyboard_row <= 4'b1111;
@@ -88,6 +106,7 @@ module gomoku_main_tb;
     gomoku_main uut (
         .clk(clk), 
         .buzzer_clk(buzzer_clk), 
+        .buzzer_clk_2(buzzer_clk_2), 
         .led_scan_clk(led_scan_clk), 
         .kb_scan_clk(kb_scan_clk), 
         .led_flicker_clk_slow(led_flicker_clk_slow), 
@@ -96,7 +115,7 @@ module gomoku_main_tb;
         .sw_power(sw_power), 
         .btn_reset(btn_reset), 
         .btn_ok(btn_ok), 
-        .buzzer(buzzer), 
+        .buzzer_out(buzzer), 
         .led_red_status(led_red_status), 
         .led_green_status(led_green_status), 
         .led_row(led_row), 
@@ -111,8 +130,8 @@ module gomoku_main_tb;
     always #25 led_scan_clk = ~led_scan_clk;
     always #25 kb_scan_clk = ~kb_scan_clk;
 
-    always #200 led_flicker_clk_slow = ~led_flicker_clk_slow;
-    always #400 led_flicker_clk_fast = ~led_flicker_clk_fast;
+    always #1000 led_flicker_clk_slow = ~led_flicker_clk_slow;
+    always #1500 led_flicker_clk_fast = ~led_flicker_clk_fast;
 
     initial begin
         clk = 0;
@@ -138,24 +157,45 @@ module gomoku_main_tb;
 
         wait(uut.memrst_done == 1);
 
-        #1000;
+        // Key 1 / red
+        #1000 task_enter_position(7, 2);
 
-        task_press_key(4'h1);
-        #600 task_key_up();
+        // Key 2 / green
+        #1000 task_enter_position(7, 2);
 
-        #2000;
+        // Key 3 / red
+        #1000 task_enter_position(7, 3);
 
-        task_press_key(4'hf);
-        #500 task_key_up();
+        // Key 4 / green
+        #1000 task_enter_position(6, 2);
 
-        #1000;
+        // Key 5 / red
+        #1000 task_enter_position(7, 4);
 
-        btn_ok = 1;
-        #500;
-        btn_ok = 0;
+        // Key 6 / green
+        #1000 task_enter_position(7, 2);
 
+        // Key 7 / red
+        #1000 task_enter_position(7, 5);
+
+        // Key 8 / green
+        #1000 task_enter_position(3, 2);
+
+        // Key 9 / red
+        #1000 task_enter_position(7, 6);
+
+
+
+
+        // End
         #10000;
 
+        // Reset
+        btn_reset = 1;
+        #1000 btn_reset = 0;
+ 
+        #10000;
+        
         $stop;
 
     end

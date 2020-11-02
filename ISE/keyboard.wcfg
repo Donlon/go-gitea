@@ -3,14 +3,14 @@
    <wave_state>
    </wave_state>
    <db_ref_list>
-      <db_ref path="D:/Links/Documents/DigitalCircuit/gomoku_game/keyboard_tb_isim_beh1.wdb" id="1" type="auto">
+      <db_ref path="D:/Links/Documents/DigitalCircuit/gomoku_game/ISE/keyboard_tb_isim_beh1.wdb" id="1" type="auto">
          <top_modules>
             <top_module name="glbl" />
             <top_module name="keyboard_tb" />
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="12" />
+   <WVObjectSize size="15" />
    <wvobject fp_name="/keyboard_tb/clk" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -93,10 +93,6 @@
       <obj_property name="ElementShortName">is_key_pressed</obj_property>
       <obj_property name="ObjectShortName">is_key_pressed</obj_property>
    </wvobject>
-   <wvobject fp_name="/keyboard_tb/row_keycode" type="array" db_ref_id="1">
-      <obj_property name="ElementShortName">row_keycode[1:0]</obj_property>
-      <obj_property name="ObjectShortName">row_keycode[1:0]</obj_property>
-   </wvobject>
    <wvobject fp_name="/keyboard_tb/key_code" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">key_code[3:0]</obj_property>
       <obj_property name="ObjectShortName">key_code[3:0]</obj_property>
@@ -105,12 +101,41 @@
       <obj_property name="ElementShortName">kb_pressed_index[3:0]</obj_property>
       <obj_property name="ObjectShortName">kb_pressed_index[3:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/keyboard_tb/uut/kb_key_valid" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">kb_key_valid</obj_property>
-      <obj_property name="ObjectShortName">kb_key_valid</obj_property>
+   <wvobject fp_name="/keyboard_tb/uut/key_valid" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">key_valid</obj_property>
+      <obj_property name="ObjectShortName">key_valid</obj_property>
    </wvobject>
-   <wvobject fp_name="/keyboard_tb/uut/kb_key_ready" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">kb_key_ready</obj_property>
-      <obj_property name="ObjectShortName">kb_key_ready</obj_property>
+   <wvobject fp_name="/keyboard_tb/uut/key_ready" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">key_ready</obj_property>
+      <obj_property name="ObjectShortName">key_ready</obj_property>
+   </wvobject>
+   <wvobject fp_name="group35" type="group">
+      <obj_property name="label">Internal</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/keyboard_tb/uut/scan_seq" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">scan_seq[1:0]</obj_property>
+         <obj_property name="ObjectShortName">scan_seq[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/keyboard_tb/uut/row_code" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">row_code[1:0]</obj_property>
+         <obj_property name="ObjectShortName">row_code[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/keyboard_tb/uut/key_pressed" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">key_pressed</obj_property>
+         <obj_property name="ObjectShortName">key_pressed</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="/keyboard_tb/uut/keydown_status" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">keydown_status</obj_property>
+      <obj_property name="ObjectShortName">keydown_status</obj_property>
+   </wvobject>
+   <wvobject fp_name="/keyboard_tb/uut/keydown_status_r" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">keydown_status_r</obj_property>
+      <obj_property name="ObjectShortName">keydown_status_r</obj_property>
+   </wvobject>
+   <wvobject fp_name="/keyboard_tb/tested_count" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">tested_count[31:0]</obj_property>
+      <obj_property name="ObjectShortName">tested_count[31:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
 </wave_config>

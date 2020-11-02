@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="D:/Links/Documents/DigitalCircuit/gomoku_game/ISE/spi_mem_tb_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="spi_mem_tb" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="11" />
+   <wvobject fp_name="/spi_mem_tb/clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="CustomSignalColor">#ff00ff</obj_property>
+   </wvobject>
+   <wvobject fp_name="/spi_mem_tb/rst_n" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">rst_n</obj_property>
+      <obj_property name="ObjectShortName">rst_n</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="CustomSignalColor">#ffff00</obj_property>
+   </wvobject>
+   <wvobject fp_name="/spi_mem_tb/valid" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">valid</obj_property>
+      <obj_property name="ObjectShortName">valid</obj_property>
+   </wvobject>
+   <wvobject fp_name="group21" type="group">
+      <obj_property name="label">Req </obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/spi_mem_tb/req_1" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">req_1</obj_property>
+         <obj_property name="ObjectShortName">req_1</obj_property>
+      </wvobject>
+      <wvobject fp_name="/spi_mem_tb/grant_1" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">grant_1</obj_property>
+         <obj_property name="ObjectShortName">grant_1</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="CustomSignalColor">#00ffff</obj_property>
+      </wvobject>
+      <wvobject fp_name="/spi_mem_tb/req_2" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">req_2</obj_property>
+         <obj_property name="ObjectShortName">req_2</obj_property>
+      </wvobject>
+      <wvobject fp_name="/spi_mem_tb/grant_2" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">grant_2</obj_property>
+         <obj_property name="ObjectShortName">grant_2</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="CustomSignalColor">#00ffff</obj_property>
+      </wvobject>
+      <wvobject fp_name="/spi_mem_tb/req_3" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">req_3</obj_property>
+         <obj_property name="ObjectShortName">req_3</obj_property>
+      </wvobject>
+      <wvobject fp_name="/spi_mem_tb/grant_3" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">grant_3</obj_property>
+         <obj_property name="ObjectShortName">grant_3</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="CustomSignalColor">#00ffff</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group23" type="group">
+      <obj_property name="label">SPI interface</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/spi_mem_tb/spi_cs" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">spi_cs</obj_property>
+         <obj_property name="ObjectShortName">spi_cs</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="CustomSignalColor">#ffff00</obj_property>
+      </wvobject>
+      <wvobject fp_name="/spi_mem_tb/spi_clk" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">spi_clk</obj_property>
+         <obj_property name="ObjectShortName">spi_clk</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="CustomSignalColor">#ff00ff</obj_property>
+      </wvobject>
+      <wvobject fp_name="/spi_mem_tb/spi_so" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">spi_so</obj_property>
+         <obj_property name="ObjectShortName">spi_so</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="CustomSignalColor">#0000ff</obj_property>
+      </wvobject>
+      <wvobject fp_name="/spi_mem_tb/spi_si" type="logic" db_ref_id="1">
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="ElementShortName">spi_si</obj_property>
+         <obj_property name="ObjectShortName">spi_si</obj_property>
+         <obj_property name="label">spi_si</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="CustomSignalColor">#008080</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group25" type="group">
+      <obj_property name="label">Internal</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/spi_mem_tb/uut/next_state" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">next_state[1:0]</obj_property>
+         <obj_property name="ObjectShortName">next_state[1:0]</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="CustomSignalColor">#008000</obj_property>
+      </wvobject>
+      <wvobject fp_name="/spi_mem_tb/uut/state" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">state[1:0]</obj_property>
+         <obj_property name="ObjectShortName">state[1:0]</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="CustomSignalColor">#00ffff</obj_property>
+      </wvobject>
+      <wvobject fp_name="/spi_mem_tb/uut/grant" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">grant</obj_property>
+         <obj_property name="ObjectShortName">grant</obj_property>
+      </wvobject>
+      <wvobject fp_name="/spi_mem_tb/uut/rx_buffer" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">rx_buffer[7:0]</obj_property>
+         <obj_property name="ObjectShortName">rx_buffer[7:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/spi_mem_tb/uut/tx_buffer" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">tx_buffer[7:0]</obj_property>
+         <obj_property name="ObjectShortName">tx_buffer[7:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/spi_mem_tb/uut/next_byte_count" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">next_byte_count[2:0]</obj_property>
+         <obj_property name="ObjectShortName">next_byte_count[2:0]</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="CustomSignalColor">#808080</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/spi_mem_tb/uut/byte_count" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">byte_count[2:0]</obj_property>
+         <obj_property name="ObjectShortName">byte_count[2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/spi_mem_tb/uut/next_bit_count" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">next_bit_count[2:0]</obj_property>
+         <obj_property name="ObjectShortName">next_bit_count[2:0]</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="CustomSignalColor">#808080</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/spi_mem_tb/uut/bit_count" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">bit_count[2:0]</obj_property>
+         <obj_property name="ObjectShortName">bit_count[2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/spi_mem_tb/uut/spi_load_data" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">spi_load_data</obj_property>
+         <obj_property name="ObjectShortName">spi_load_data</obj_property>
+      </wvobject>
+      <wvobject fp_name="/spi_mem_tb/uut/spi_tx_byte" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">spi_tx_byte[7:0]</obj_property>
+         <obj_property name="ObjectShortName">spi_tx_byte[7:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group22" type="group">
+      <obj_property name="label">Write signals</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/spi_mem_tb/we_1" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">we_1</obj_property>
+         <obj_property name="ObjectShortName">we_1</obj_property>
+      </wvobject>
+      <wvobject fp_name="/spi_mem_tb/addr_1" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">addr_1[5:0]</obj_property>
+         <obj_property name="ObjectShortName">addr_1[5:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/spi_mem_tb/wr_data_1" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">wr_data_1[1:0]</obj_property>
+         <obj_property name="ObjectShortName">wr_data_1[1:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="/spi_mem_tb/data_2" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">data_2[1:0]</obj_property>
+      <obj_property name="ObjectShortName">data_2[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/spi_mem_tb/data_3" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">data_3[1:0]</obj_property>
+      <obj_property name="ObjectShortName">data_3[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/spi_mem_tb/addr_2" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">addr_2[5:0]</obj_property>
+      <obj_property name="ObjectShortName">addr_2[5:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/spi_mem_tb/addr_3" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">addr_3[5:0]</obj_property>
+      <obj_property name="ObjectShortName">addr_3[5:0]</obj_property>
+   </wvobject>
+</wave_config>

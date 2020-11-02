@@ -1,6 +1,6 @@
 module keyboard(
-    input scan_clk, // low speed scan clock
     input clk,
+    input scan_clk, // low speed scan clock
     input en, // enable
     input rst_n,
 
@@ -36,9 +36,6 @@ module keyboard(
         end
     end
 
-    reg press_status;
-    reg press_last_status;
-
     always @(*) begin
         casez (keyboard_row)
             4'b0???: row_code[1:0] <= 2'b00;
@@ -49,19 +46,21 @@ module keyboard(
         endcase
     end
 
-    reg key_pressed;
+    reg key_pressed; // flag of first key press
+    reg keydown_status; // cross clock domain
+    reg keydown_status_r;
 
     always @(negedge scan_clk or negedge rst_n_) begin
         if (~rst_n_) begin
             pressed_index <= 4'b0;
-            press_status <= 0;
             key_pressed <= 0;
+            keydown_status <= 0;
         end else if (keyboard_row != 4'b1111) begin
-            if (pressed_index != {scan_seq, row_code} || ~key_pressed) begin // key changed
+            if (pressed_index != {row_code, scan_seq} || ~key_pressed) begin // key changed
                 key_pressed <= 1;
-                press_status <= ~press_status; // key press detected
-                pressed_index[3:2] <= scan_seq;
-                pressed_index[1:0] <= row_code;
+                keydown_status <= ~keydown_status;
+                pressed_index[3:2] <= row_code;
+                pressed_index[1:0] <= scan_seq;
             end
         end
     end
@@ -70,13 +69,15 @@ module keyboard(
         if (~rst_n_) begin
             key_valid <= 0;
         end else begin
-            if (press_status != press_last_status) begin
+            if (keydown_status != keydown_status_r) begin
                 key_valid <= 1;
-            end
-            if (key_valid && key_ready) begin
+            end else if (key_valid && key_ready) begin
                 key_valid <= 0;
             end
-            press_last_status <= press_status; 
         end
+    end
+
+    always @(posedge clk) begin : proc_keydown_status_r
+        keydown_status_r <= keydown_status;
     end
 endmodule

@@ -112,6 +112,10 @@
          <obj_property name="ElementShortName">ram_data[1:0]</obj_property>
          <obj_property name="ObjectShortName">ram_data[1:0]</obj_property>
       </wvobject>
+      <wvobject fp_name="/gomoku_main_tb/uut/memrst_en" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">memrst_en</obj_property>
+         <obj_property name="ObjectShortName">memrst_en</obj_property>
+      </wvobject>
       <wvobject fp_name="/gomoku_main_tb/uut/memrst_inst/done" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">done</obj_property>
          <obj_property name="ObjectShortName">done</obj_property>
@@ -122,6 +126,10 @@
    <wvobject fp_name="group86" type="group">
       <obj_property name="label">Keyboard</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/gomoku_main_tb/uut/kb_inst/en" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">en</obj_property>
+         <obj_property name="ObjectShortName">en</obj_property>
+      </wvobject>
       <wvobject fp_name="/gomoku_main_tb/uut/kb_scan_clk" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">kb_scan_clk</obj_property>
          <obj_property name="ObjectShortName">kb_scan_clk</obj_property>
@@ -131,6 +139,14 @@
       <wvobject fp_name="/gomoku_main_tb/is_key_pressed" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">is_key_pressed</obj_property>
          <obj_property name="ObjectShortName">is_key_pressed</obj_property>
+      </wvobject>
+      <wvobject fp_name="/gomoku_main_tb/uut/kb_key_valid" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">kb_key_valid</obj_property>
+         <obj_property name="ObjectShortName">kb_key_valid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/gomoku_main_tb/uut/kb_key_ready" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">kb_key_ready</obj_property>
+         <obj_property name="ObjectShortName">kb_key_ready</obj_property>
       </wvobject>
       <wvobject fp_name="/gomoku_main_tb/keyboard_col" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">keyboard_col[3:0]</obj_property>
@@ -165,10 +181,12 @@
       <wvobject fp_name="/gomoku_main_tb/uut/x_pos" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">x_pos[2:0]</obj_property>
          <obj_property name="ObjectShortName">x_pos[2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/gomoku_main_tb/uut/y_pos" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">y_pos[2:0]</obj_property>
          <obj_property name="ObjectShortName">y_pos[2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/gomoku_main_tb/uut/state" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">state[2:0]</obj_property>
@@ -216,6 +234,10 @@
    <wvobject fp_name="group96" type="group">
       <obj_property name="label">Judger</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/gomoku_main_tb/uut/judger_inst/en" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">en</obj_property>
+         <obj_property name="ObjectShortName">en</obj_property>
+      </wvobject>
       <wvobject fp_name="/gomoku_main_tb/uut/judger_inst/done" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">done</obj_property>
          <obj_property name="ObjectShortName">done</obj_property>
@@ -223,10 +245,7 @@
       <wvobject fp_name="/gomoku_main_tb/uut/judger_inst/result" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">result[1:0]</obj_property>
          <obj_property name="ObjectShortName">result[1:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/gomoku_main_tb/uut/judger_inst/en" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">en</obj_property>
-         <obj_property name="ObjectShortName">en</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
    </wvobject>
    <wvobject fp_name="group100" type="group">
@@ -240,9 +259,9 @@
          <obj_property name="ElementShortName">ram_wr_addr[5:0]</obj_property>
          <obj_property name="ObjectShortName">ram_wr_addr[5:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/gomoku_main_tb/uut/ram_wr_data_0" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">ram_wr_data_0</obj_property>
-         <obj_property name="ObjectShortName">ram_wr_data_0</obj_property>
+      <wvobject fp_name="/gomoku_main_tb/uut/ram_wr_data_0" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ram_wr_data_0[1:0]</obj_property>
+         <obj_property name="ObjectShortName">ram_wr_data_0[1:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/gomoku_main_tb/uut/ram_wr_data" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">ram_wr_data[1:0]</obj_property>

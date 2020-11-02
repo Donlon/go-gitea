@@ -198,17 +198,11 @@ module game_judger (
         end else begin
             if (~en) begin
                 done <= 0;
-            end 
-            if (state == S_TEST_OVERLAPSED && next_state == S_IDLE) begin
+            end else if (state == S_TEST_OVERLAPSED && next_state == S_IDLE) begin
                 result <= `JUDGER_INVALID;
                 done <= 1;
-            end
-            if ((state == S_READ_MEM || state == S_WAIT) && next_state == S_IDLE) begin
-                if (judger_win) begin
-                    result <= `JUDGER_WIN;
-                end else begin
-                    result <= `JUDGER_VALID;
-                end
+            end else if ((state == S_READ_MEM || state == S_WAIT) && next_state == S_IDLE) begin
+                result <= judger_win ? `JUDGER_WIN : `JUDGER_VALID;
                 done <= 1;
             end 
         end

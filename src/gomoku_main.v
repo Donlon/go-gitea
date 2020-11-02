@@ -4,6 +4,7 @@
 module gomoku_main(
     input clk,
     input buzzer_clk,
+    input buzzer_clk_2,
     input led_scan_clk,
     input kb_scan_clk,
     input led_flicker_clk_slow,
@@ -17,7 +18,7 @@ module gomoku_main(
     input btn_ok,
 
     // Buzzer output
-    output buzzer,
+    output buzzer_out,
 
     // LED Pin define
     output led_red_status,
@@ -120,8 +121,8 @@ module gomoku_main(
     // reg led_color_flicker_color;
 
     display_led_scanner scanner_inst(
-        .scan_clk(led_scan_clk),
         .clk(clk),
+        .scan_clk(led_scan_clk),
         .en(led_scanner_en),
         .rst_n(rst_n),
 
@@ -173,7 +174,8 @@ module gomoku_main(
         btn_ok_rr <= btn_ok_r;
     end
 
-    wire btn_ok_down = btn_ok_rr == 0 && btn_ok_r == 1; // capture key-down (lo to hi transition) only
+    // capture key-down (lo to hi transition) event only
+    wire btn_ok_down = btn_ok_rr == 0 && btn_ok_r == 1;
 
     // === Judger signals ===
     wire judger_en;
@@ -198,7 +200,14 @@ module gomoku_main(
 
     // Buzzer
     wire buzzer_en;
-    assign buzzer = buzzer_clk & buzzer_en;
+    buzzer buzzer_inst(
+        .clk(buzzer_clk),     // Clock 1MHz
+        .clk_2(buzzer_clk_2), // Clock 200Hz
+        .rst_n(rst_n),
+        .en(buzzer_en),
+        
+        .buzzer_out(buzzer_out)
+    );
 
     // FSM logic
     always @(posedge clk or negedge rst_n) begin : proc_state
@@ -225,12 +234,10 @@ module gomoku_main(
                 if (judger_done) begin
                     if (judger_result == `JUDGER_WIN) begin
                         next_state = S_END;
+                    end else if (judger_result == `JUDGER_VALID && piece_count == 6'd63) begin
+                        next_state = S_END;
                     end else begin
                         next_state = S_WAIT_INPUT;
-                    end
-
-                    if (judger_result == `JUDGER_VALID && piece_count == 6'd63) begin
-                        next_state = S_END;
                     end
                 end
             default:
@@ -253,7 +260,7 @@ module gomoku_main(
     end
 
     // Screen flicker
-    always @(posedge clk or negedge rst_n) begin : proc_screen_flicker_done
+    always @(posedge clk or negedge rst_n) begin : proc_screen_flicker_count
         if(~rst_n) begin
             screen_flicker_count <= 0;
         end else begin
@@ -267,11 +274,14 @@ module gomoku_main(
             end
         end
     end
-    always @(*) begin : proc_
+
+    always @(*) begin : proc_screen_flicker_done
         screen_flicker_done <= screen_flicker_count == 3;
     end
 
-    wire judger_done_res_valid = state == S_JUDGE && judger_done && judger_result == `JUDGER_VALID;
+    wire judger_done_res_valid = (state == S_JUDGE)
+                                 && judger_done
+                                 && (judger_result == `JUDGER_VALID || judger_result == `JUDGER_WIN);
 
     // Game state transfer
     always @(posedge clk or negedge rst_n) begin : proc_state_xfer
@@ -282,10 +292,11 @@ module gomoku_main(
             if (state == S_RESET_STATE) begin
                 current_active_part <= `SIDE_RED;
                 piece_count <= 0;
-            end
-            if (judger_done_res_valid) begin
+            end else if (state == S_JUDGE && judger_done/*judger_done_res_valid*/) begin
                 current_active_part <= ~current_active_part;
-                piece_count <= piece_count + 1'b1;
+                if (judger_result == `JUDGER_VALID) begin
+                    piece_count <= piece_count + 1'b1;
+                end
             end
         end
     end
@@ -320,17 +331,13 @@ module gomoku_main(
         end
     end
 
-    // Judger
-    assign judger_en = state == S_JUDGE;
-
-    // Key down processor
     always @(posedge clk or negedge rst_n) begin : proc_recv_keys
         if (~rst_n) begin
             presseed_keys <= 0;
             {y_pos, x_pos} <= 0;
         end else begin
             if (kb_key_valid) begin
-                if (kb_pressed_key[3] == 0) begin // x-pos
+                if (kb_pressed_key[3] == 1) begin // x-pos
                     x_pos <= kb_pressed_key[2:0];
                     presseed_keys[0] <= 1;
                 end else begin // y-pos
@@ -338,11 +345,14 @@ module gomoku_main(
                     presseed_keys[1] <= 1;
                 end
             end
-            if (judger_done_res_valid) begin
+            if ((state == S_JUDGE && judger_done) || state == S_RESET_STATE) begin
                 presseed_keys <= 0;
             end
         end
     end
+
+    // Judger
+    assign judger_en = state == S_JUDGE;
 
     // Mem reset
     assign memrst_en = state == S_RESET_STATE;

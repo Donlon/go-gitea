@@ -57,7 +57,7 @@ module mem_reset (
         if(~rst_n) begin
             done <= 0;
         end else begin
-            if (~done && en)
+            if (done && ~en)
                 done <= 0;
             if (state == S_WORKING && next_state == S_IDLE)
                 done <= 1;

@@ -30,6 +30,7 @@ module top_spartan6(
     wire kb_scan_clk;
     wire key_debounce_clk = kb_scan_clk;
     wire buzzer_clk = led_scan_clk;
+    wire buzzer_clk_2;
     wire led_flicker_clk_slow;
     wire led_flicker_clk_fast;
 
@@ -80,6 +81,7 @@ module top_spartan6(
         .rst_n(rst_n),  // Asynchronous reset active low
 
         .clk_2k(led_scan_clk),
+        .clk_200Hz(buzzer_clk_2),
         .clk_100Hz(kb_scan_clk),
         .clk_2Hz(led_flicker_clk_slow),
         .clk_1Hz(led_flicker_clk_fast)
@@ -88,6 +90,7 @@ module top_spartan6(
     gomoku_main main(   
         .clk(clk),
         .buzzer_clk(buzzer_clk),
+        .buzzer_clk_2(buzzer_clk_2),
         .led_scan_clk(led_scan_clk),
         .kb_scan_clk(kb_scan_clk),
         .led_flicker_clk_slow(led_flicker_clk_slow),
@@ -100,7 +103,7 @@ module top_spartan6(
         .btn_ok(key_ok_deb),
 
         // Buzzer output
-        .buzzer(buzzer),
+        .buzzer_out(buzzer),
 
         // LED Pin define
         .led_red_status(led_red_status),

@@ -10,8 +10,8 @@ module checkerboard_state_ram_tb;
     reg  [5:0] rd_addr_1;
     wire [1:0] rd_data_out_1;
 
-    reg  [5:0] rd_addr_2;
-    wire [1:0] rd_data_out_2;
+    // reg  [5:0] rd_addr_2;
+    // wire [1:0] rd_data_out_2;
 
     // Instantiate the Unit Under Test (UUT)
     checkerboard_state_ram uut (
@@ -22,11 +22,14 @@ module checkerboard_state_ram_tb;
         .wr_addr(wr_addr),
         .wr_data(wr_data),
 
-        .rd_addr_1(rd_addr_1),
-        .rd_data_out_1(rd_data_out_1),
+        .rd_addr(rd_addr_1),
+        .rd_data_out(rd_data_out_1)
 
-        .rd_addr_2(rd_addr_2),
-        .rd_data_out_2(rd_data_out_2)
+        // .rd_addr_1(rd_addr_1),
+        // .rd_data_out_1(rd_data_out_1),
+
+        // .rd_addr_2(rd_addr_2),
+        // .rd_data_out_2(rd_data_out_2)
     );
 
     always #0.5 clk = ~clk;
@@ -52,11 +55,11 @@ module checkerboard_state_ram_tb;
                 rd_addr_1 = addr;
                 #0.4;
                 // read_memory = rd_data_out_1;
-            end else begin
+            end/* else begin
                 rd_addr_2 = addr;
                 #0.4;
                 // read_memory = rd_data_out_2;
-            end
+            end*/
         end
     endtask
 
@@ -72,7 +75,7 @@ module checkerboard_state_ram_tb;
         wr_addr = 0;
         wr_data = 0;
         rd_addr_1 = 0;
-        rd_addr_2 = 0;
+        // rd_addr_2 = 0;
         error_count = 0;
 
         write_memory(6'h00, 2'b10);
@@ -95,14 +98,14 @@ module checkerboard_state_ram_tb;
             end
         end
 
-        for (i = 0; i < 64; i = i + 1) begin
-            read_memory(i, 1);
-            #0.5;
-            $display("read memory[%d] port 2: get: %b, expected: %b", i, rd_data_out_2, random_data[i]);
-            if (random_data[i] != rd_data_out_2) begin
-                error_count = error_count + 1;
-            end
-        end
+        // for (i = 0; i < 64; i = i + 1) begin
+        //     read_memory(i, 1);
+        //     #0.5;
+        //     $display("read memory[%d] port 2: get: %b, expected: %b", i, rd_data_out_2, random_data[i]);
+        //     if (random_data[i] != rd_data_out_2) begin
+        //         error_count = error_count + 1;
+        //     end
+        // end
 
         if (error_count == 0) begin
             $display("== module test pass ==");

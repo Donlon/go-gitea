@@ -33,10 +33,7 @@ module mem_reset_tb;
         .wr_data(ram_data),
 
         .rd_addr_1(rd_addr_1),
-        .rd_data_out_1(rd_data_out_1),
-
-        .rd_addr_2(),
-        .rd_data_out_2()
+        .rd_data_out_1(rd_data_out_1)
     );
 
     // Instantiate the Unit Under Test (UUT)

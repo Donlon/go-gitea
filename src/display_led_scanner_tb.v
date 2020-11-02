@@ -56,10 +56,7 @@ module display_led_scanner_tb;
         .wr_data(ram_wr_data),
 
         .rd_addr_1(ram_rd_addr),
-        .rd_data_out_1(ram_rd_data_out),
-
-        .rd_addr_2(),
-        .rd_data_out_2()
+        .rd_data_out_1(ram_rd_data_out)
     );
 
     localparam TESTCASE_DATA_SIZE = 8 * 8 * 2;

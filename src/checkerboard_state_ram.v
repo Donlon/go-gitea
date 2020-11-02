@@ -8,11 +8,8 @@ module checkerboard_state_ram # (
     input [2 * EDGE_ADDR_BITS - 1:0] wr_addr,
     input [DATA_BITS - 1:0] wr_data,
 
-    input [2 * EDGE_ADDR_BITS - 1:0]  rd_addr_1,
-    output reg [DATA_BITS - 1:0] rd_data_out_1,
-
-    input [2 * EDGE_ADDR_BITS - 1:0]  rd_addr_2,
-    output reg [DATA_BITS - 1:0] rd_data_out_2
+    input [2 * EDGE_ADDR_BITS - 1:0]  rd_addr,
+    output reg [DATA_BITS - 1:0] rd_data_out
 );
 
     reg [DATA_BITS - 1:0] mem[2 ** (2 * EDGE_ADDR_BITS) - 1:0];
@@ -24,11 +21,7 @@ module checkerboard_state_ram # (
     end
 
     always @(*) begin
-        rd_data_out_1 = mem[rd_addr_1];
-    end
-
-    always @(*) begin
-        rd_data_out_2 = mem[rd_addr_2];
+        rd_data_out = mem[rd_addr];
     end
 
 endmodule

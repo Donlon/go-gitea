@@ -63,10 +63,8 @@ module gomoku_main(
     reg [5:0] ram_wr_addr;
     reg [1:0] ram_wr_data;
 
-    wire [5:0] ram_rd_addr_1;
-    wire [1:0] ram_rd_data_out_1;
-    wire [5:0] ram_rd_addr_2;
-    wire [1:0] ram_rd_data_out_2;
+    reg  [5:0] ram_rd_addr;
+    wire [1:0] ram_rd_data;
 
     checkerboard_state_ram #(
         .DATA_BITS(2),
@@ -79,11 +77,8 @@ module gomoku_main(
         .wr_addr(ram_wr_addr),
         .wr_data(ram_wr_data),
 
-        .rd_addr_1(ram_rd_addr_1),
-        .rd_data_out_1(ram_rd_data_out_1),
-
-        .rd_addr_2(ram_rd_addr_2),
-        .rd_data_out_2(ram_rd_data_out_2)
+        .rd_addr(ram_rd_addr),
+        .rd_data_out(ram_rd_data)
     );
 
     // === Mem reset ===
@@ -120,6 +115,9 @@ module gomoku_main(
     // reg led_color_flicker_en;
     // reg led_color_flicker_color;
 
+    wire [5:0] scanner_rd_addr;
+    reg  [1:0] scanner_rd_data;
+
     display_led_scanner scanner_inst(
         .clk(clk),
         .scan_clk(led_scan_clk),
@@ -137,8 +135,8 @@ module gomoku_main(
         // .color_flicker_en(color_flicker_en),
         // .color_flicker_color(color_flicker_color),
 
-        .ram_rd_addr(ram_rd_addr_1),
-        .ram_data(ram_rd_data_out_1),
+        .ram_rd_addr(scanner_rd_addr),
+        .ram_data(scanner_rd_data),
 
         .led_row(led_row),
         .led_col_red(led_col_red),
@@ -183,6 +181,9 @@ module gomoku_main(
     wire [1:0] judger_result;
     wire       judger_done;
 
+    wire [5:0] judger_rd_addr;
+    reg  [1:0] judger_rd_data;
+
     game_judger judger_inst(
         .clk(clk),    // Clock
         .en(judger_en),
@@ -191,8 +192,8 @@ module gomoku_main(
         .color(current_active_part),
         .pos(pos),
 
-        .ram_rd_addr(ram_rd_addr_2),
-        .ram_data(ram_rd_data_out_2),
+        .ram_rd_addr(judger_rd_addr),
+        .ram_data(judger_rd_data),
 
         .result(judger_result),
         .done(judger_done)
@@ -357,7 +358,7 @@ module gomoku_main(
     // Mem reset
     assign memrst_en = state == S_RESET_STATE;
 
-    // RAM writing
+    // RAM write mux
     reg ram_we_0;
     reg [1:0] ram_wr_data_0;
     always @(*) begin : proc_ram_write
@@ -372,6 +373,20 @@ module gomoku_main(
         end
     end
 
+    // RAM read mux
+    always @(*) begin : proc_
+        if (state == S_WAIT_INPUT) begin
+            ram_rd_addr     = scanner_rd_addr;
+            scanner_rd_data = ram_rd_data;
+            judger_rd_data  = 0;
+        end else begin
+            ram_rd_addr     = judger_rd_addr;
+            scanner_rd_data = 0;
+            judger_rd_data  = ram_rd_data;
+        end
+    end
+
+    // RAM writing
     always @(posedge clk or negedge rst_n) begin : proc_ram_we
         if (~rst_n) begin
             ram_we_0 <= 0;

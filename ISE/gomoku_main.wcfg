@@ -10,7 +10,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="13" />
+   <WVObjectSize size="14" />
    <wvobject fp_name="group23" type="group">
       <obj_property name="label">Clock</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -37,6 +37,34 @@
       <wvobject fp_name="/gomoku_main_tb/rst_n" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">rst_n</obj_property>
          <obj_property name="ObjectShortName">rst_n</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group107" type="group">
+      <obj_property name="label">RAM</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/gomoku_main_tb/uut/judger_rd_addr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">judger_rd_addr[5:0]</obj_property>
+         <obj_property name="ObjectShortName">judger_rd_addr[5:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/gomoku_main_tb/uut/judger_rd_data" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">judger_rd_data[1:0]</obj_property>
+         <obj_property name="ObjectShortName">judger_rd_data[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/gomoku_main_tb/uut/scanner_rd_addr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">scanner_rd_addr[5:0]</obj_property>
+         <obj_property name="ObjectShortName">scanner_rd_addr[5:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/gomoku_main_tb/uut/scanner_rd_data" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">scanner_rd_data[1:0]</obj_property>
+         <obj_property name="ObjectShortName">scanner_rd_data[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/gomoku_main_tb/uut/ram_rd_addr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ram_rd_addr[5:0]</obj_property>
+         <obj_property name="ObjectShortName">ram_rd_addr[5:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/gomoku_main_tb/uut/ram_rd_data" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ram_rd_data[1:0]</obj_property>
+         <obj_property name="ObjectShortName">ram_rd_data[1:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject fp_name="group46" type="group">

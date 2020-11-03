@@ -34,9 +34,25 @@
          <obj_property name="ElementShortName">led_flicker_clk</obj_property>
          <obj_property name="ObjectShortName">led_flicker_clk</obj_property>
       </wvobject>
+      <wvobject fp_name="/gomoku_main_tb/uut/countdown_clk" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">countdown_clk</obj_property>
+         <obj_property name="ObjectShortName">countdown_clk</obj_property>
+      </wvobject>
       <wvobject fp_name="/gomoku_main_tb/rst_n" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">rst_n</obj_property>
          <obj_property name="ObjectShortName">rst_n</obj_property>
+      </wvobject>
+      <wvobject fp_name="/gomoku_main_tb/uut/led_flicker_clk_rst" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">led_flicker_clk_rst</obj_property>
+         <obj_property name="ObjectShortName">led_flicker_clk_rst</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="CustomSignalColor">#c0c0c0</obj_property>
+      </wvobject>
+      <wvobject fp_name="/gomoku_main_tb/uut/countdown_clk_rst" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">countdown_clk_rst</obj_property>
+         <obj_property name="ObjectShortName">countdown_clk_rst</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+         <obj_property name="CustomSignalColor">#c0c0c0</obj_property>
       </wvobject>
    </wvobject>
    <wvobject fp_name="group107" type="group">

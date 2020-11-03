@@ -9,6 +9,7 @@ module gomoku_main(
     input kb_scan_clk,
     input led_flicker_clk_slow,
     input led_flicker_clk_fast,
+    input countdown_clk,
 
     input rst_n,
 
@@ -29,13 +30,16 @@ module gomoku_main(
     output [7:0] led_col_red,
     output [7:0] led_col_green,
 
-    // output [0:3] num_countdown,
+    output [0:3] num_countdown,
     // output [0:3] red_win_count,
     // output [0:3] green_win_count,
 
     // keyboard
     output [3:0] keyboard_col,
-    input  [3:0] keyboard_row
+    input  [3:0] keyboard_row,
+
+    output reg   led_flicker_clk_rst,
+    output reg   countdown_clk_rst
 );
     // === Game status ===
     reg current_active_part;
@@ -269,7 +273,7 @@ module gomoku_main(
                 screen_flicker_count <= 0;
             end
             if (state == S_STARTING) begin
-                if (screen_flicker_last_state_r == 0 && led_flicker_clk == 1) begin
+                if (screen_flicker_last_state_r == 1 && led_flicker_clk == 0) begin
 					 screen_flicker_count <= screen_flicker_count + 1'b1;
                 end
             end
@@ -277,7 +281,7 @@ module gomoku_main(
     end
 
     always @(*) begin : proc_screen_flicker_done
-        screen_flicker_done <= screen_flicker_count == 3;
+        screen_flicker_done <= screen_flicker_count == 2;
     end
 
     wire judger_done_res_valid = (state == S_JUDGE)
@@ -299,6 +303,17 @@ module gomoku_main(
                     piece_count <= piece_count + 1'b1;
                 end
             end
+        end
+    end
+
+    // Clock reset
+    always @(posedge clk or negedge rst_n) begin : proc_led_flicker_clk_rst
+        if(~rst_n) begin
+            led_flicker_clk_rst <= 0;
+            countdown_clk_rst <= 0;
+        end else begin
+            led_flicker_clk_rst <= state != S_STARTING && next_state == S_STARTING;
+            countdown_clk_rst   <= state == S_JUDGE && judger_done;
         end
     end
 

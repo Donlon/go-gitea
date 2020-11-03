@@ -25,15 +25,6 @@ module top_maxii(
     output [3:0] keyboard_col,
     input  [3:0] keyboard_row
 );
-    // Clock
-    wire led_scan_clk;
-    wire kb_scan_clk;
-    wire key_debounce_clk = kb_scan_clk;
-    wire buzzer_clk = led_scan_clk;
-    wire buzzer_clk_2;
-    wire led_flicker_clk_slow;
-    wire led_flicker_clk_fast;
-
     // Press buttons
     wire key_reset = btn[0];
     wire key_ok    = btn[7];
@@ -67,7 +58,25 @@ module top_maxii(
     assign led[6] = led_flicker_clk_slow;
     assign led[7] = led_flicker_clk_fast;
 
-    // === Clock generator ===
+    // Clock
+    wire clk_2k;
+    wire clk_100Hz;
+    wire clk_200Hz;
+    wire clk_2Hz;
+    wire clk_1Hz;
+
+    wire led_scan_clk = clk_2k;
+    wire kb_scan_clk = clk_100Hz;
+    wire key_debounce_clk = clk_100Hz;
+    wire buzzer_clk = clk_2k;
+    wire buzzer_clk_2 = clk_200Hz;
+    wire led_flicker_clk_slow = clk_2Hz;
+    wire led_flicker_clk_fast = clk_1Hz;
+    wire countdown_clk = clk_1Hz;
+
+    wire led_flicker_clk_rst;
+    wire countdown_clk_rst;
+
     clock_gen #(
         .IN_FREQ(1000000) // 1M
     )
@@ -75,11 +84,14 @@ module top_maxii(
         .clk_in(clk),
         .rst_n(rst_n),  // Asynchronous reset active low
 
-        .clk_2k(led_scan_clk),
-        .clk_100Hz(kb_scan_clk),
-        .clk_200Hz(buzzer_clk_2),
-        .clk_2Hz(led_flicker_clk_slow),
-        .clk_1Hz(led_flicker_clk_fast)
+        .clk_2k(clk_2k),
+        .clk_100Hz(clk_100Hz),
+        .clk_200Hz(clk_200Hz),
+        .clk_2Hz(clk_2Hz),
+        .clk_1Hz(clk_1Hz),
+
+        .clk_2Hz_rst(led_flicker_clk_rst),
+        .clk_1Hz_rst(countdown_clk_rst)
     );
 
     gomoku_main main(
@@ -90,6 +102,7 @@ module top_maxii(
         .kb_scan_clk(kb_scan_clk),
         .led_flicker_clk_slow(led_flicker_clk_slow),
         .led_flicker_clk_fast(led_flicker_clk_fast),
+        .countdown_clk(countdown_clk),
 
         .rst_n(rst_n),
 
@@ -115,7 +128,10 @@ module top_maxii(
 
         // keyboard
         .keyboard_row(keyboard_row),
-        .keyboard_col(keyboard_col)
+        .keyboard_col(keyboard_col),
+
+        .led_flicker_clk_rst(led_flicker_clk_rst),
+        .countdown_clk_rst(countdown_clk_rst)
     );
 
     //assign {led[15], led[14]} = main.state;

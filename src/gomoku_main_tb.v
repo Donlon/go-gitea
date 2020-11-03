@@ -10,6 +10,7 @@ module gomoku_main_tb;
     reg kb_scan_clk;
     reg led_flicker_clk_slow;
     reg led_flicker_clk_fast;
+    reg countdown_clk;
     reg rst_n;
     reg sw_power;
     reg btn_reset;
@@ -24,6 +25,8 @@ module gomoku_main_tb;
     wire [7:0] led_col_red;
     wire [7:0] led_col_green;
     wire [3:0] keyboard_col;
+    wire led_flicker_clk_rst;
+    wire countdown_clk_rst;
 
     // Key press emulator
 
@@ -111,6 +114,7 @@ module gomoku_main_tb;
         .kb_scan_clk(kb_scan_clk), 
         .led_flicker_clk_slow(led_flicker_clk_slow), 
         .led_flicker_clk_fast(led_flicker_clk_fast), 
+        .countdown_clk(countdown_clk),
         .rst_n(rst_n), 
         .sw_power(sw_power), 
         .btn_reset(btn_reset), 
@@ -122,7 +126,10 @@ module gomoku_main_tb;
         .led_col_red(led_col_red), 
         .led_col_green(led_col_green), 
         .keyboard_row(keyboard_row), 
-        .keyboard_col(keyboard_col)
+        .keyboard_col(keyboard_col),
+
+        .led_flicker_clk_rst(led_flicker_clk_rst),
+        .countdown_clk_rst(countdown_clk_rst)
     );
 
     always #0.5 clk = ~clk;
@@ -130,14 +137,25 @@ module gomoku_main_tb;
     always #25 led_scan_clk = ~led_scan_clk;
     always #25 kb_scan_clk = ~kb_scan_clk;
 
+    always #1000 countdown_clk        = ~countdown_clk;
     always #1000 led_flicker_clk_slow = ~led_flicker_clk_slow;
     always #1500 led_flicker_clk_fast = ~led_flicker_clk_fast;
+
+    always @(posedge led_flicker_clk_rst) begin : proc_led_flicker_clk_rst
+        led_flicker_clk_slow = 0;
+        led_flicker_clk_fast = 0;
+    end
+
+    always @(posedge countdown_clk_rst) begin : proc_countdown_clk_rst
+        countdown_clk = 0; // TODO: use fork-join task to reset the clock
+    end
 
     initial begin
         clk = 0;
         buzzer_clk = 0;
         led_scan_clk = 0;
         kb_scan_clk = 0;
+        countdown_clk = 0;
         led_flicker_clk_slow = 0;
         led_flicker_clk_fast = 0;
         rst_n = 0;

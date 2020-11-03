@@ -53,13 +53,15 @@ module top_maxii(
     wire led_red_status;
     wire led_green_status;
 
-    assign led[0] = led_red_status;
-    assign led[1] = led_green_status;
-    assign led[6] = led_flicker_clk_slow;
-    assign led[7] = led_flicker_clk_fast;
+    assign led[15] = led_red_status;
+    // assign led[1]  = led_green_status;
+    assign led[2]  = led_green_status;
+    // assign led[6] = led_flicker_clk_slow;
+    // assign led[7] = led_flicker_clk_fast;
 
     // Countdown number
     wire [3:0] num_countdown;
+    wire countdown_en;
 
     // Win count
     wire [3:0] red_win_count;
@@ -75,7 +77,7 @@ module top_maxii(
     wire led_scan_clk = clk_2k;
     wire kb_scan_clk = clk_100Hz;
     wire key_debounce_clk = clk_100Hz;
-    wire buzzer_clk = clk_2k;
+    wire buzzer_clk = clk;
     wire buzzer_clk_2 = clk_200Hz;
     wire led_flicker_clk_slow = clk_2Hz;
     wire led_flicker_clk_fast = clk_1Hz;
@@ -130,6 +132,7 @@ module top_maxii(
         .led_col_green(led_col_green),
 
         .num_countdown(num_countdown),
+        .countdown_en(countdown_en),
         .red_win_count(red_win_count),
         .green_win_count(green_win_count),
 
@@ -142,7 +145,7 @@ module top_maxii(
     );
 
     led_seg_scanner seg_scanner(
-        .scan_clk(clk_100Hz),    // Clock
+        .scan_clk(clk_2k),    // Clock
         .rst_n(rst_n),  // Asynchronous reset active low
     
         .digit_0(red_win_count),
@@ -153,6 +156,15 @@ module top_maxii(
         .digit_5(0),
         .digit_6(0),
         .digit_7(green_win_count),
+
+        .digit_en_0(1),
+        .digit_en_1(0),
+        .digit_en_2(0),
+        .digit_en_3(0),
+        .digit_en_4(countdown_en),
+        .digit_en_5(0),
+        .digit_en_6(0),
+        .digit_en_7(1),
 
         .seg_data(seg_data),
         .seg_sel(seg_sel)

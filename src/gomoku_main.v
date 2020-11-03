@@ -31,6 +31,7 @@ module gomoku_main(
     output [7:0] led_col_green,
 
     output reg [3:0] num_countdown,
+    output           countdown_en,
     output reg [3:0] red_win_count,
     output reg [3:0] green_win_count,
 
@@ -116,8 +117,8 @@ module gomoku_main(
     wire [5:0] led_point_flicker_pos;
     wire led_point_flicker_color;
 
-    // reg led_color_flicker_en;
-    // reg led_color_flicker_color;
+    reg led_color_flicker_en;
+    reg led_color_flicker_color;
 
     wire [5:0] scanner_rd_addr;
     reg  [1:0] scanner_rd_data;
@@ -136,8 +137,8 @@ module gomoku_main(
         .point_flicker_pos(led_point_flicker_pos),
         .point_flicker_color(led_point_flicker_color),
 
-        // .color_flicker_en(color_flicker_en),
-        // .color_flicker_color(color_flicker_color),
+        .color_flicker_en(color_flicker_en),
+        .color_flicker_color(color_flicker_color),
 
         .ram_rd_addr(scanner_rd_addr),
         .ram_data(scanner_rd_data),
@@ -245,6 +246,8 @@ module gomoku_main(
                         next_state = S_WAIT_INPUT;
                     end
                 end
+            S_END:
+                next_state = S_END;
             default:
                 next_state = S_STOPPED;
         endcase
@@ -281,7 +284,7 @@ module gomoku_main(
     end
 
     always @(*) begin : proc_screen_flicker_done
-        screen_flicker_done <= screen_flicker_count == 2;
+        screen_flicker_done <= screen_flicker_count == 3;
     end
 
     wire judger_done_res_valid = (state == S_JUDGE)
@@ -297,7 +300,7 @@ module gomoku_main(
             if (state == S_RESET_STATE) begin
                 current_active_part <= `SIDE_RED;
                 piece_count <= 0;
-            end else if (state == S_JUDGE && judger_done/*judger_done_res_valid*/) begin
+            end else if (state == S_JUDGE && judger_done) begin
                 current_active_part <= ~current_active_part;
                 if (judger_result == `JUDGER_VALID) begin
                     piece_count <= piece_count + 1'b1;
@@ -327,11 +330,13 @@ module gomoku_main(
         countdown_clk_r <= countdown_clk;
     end
 
+    assign countdown_en = state == S_WAIT_INPUT;
+
     always @(posedge clk or negedge rst_n) begin : proc_countdown
         if(~rst_n) begin
             num_countdown <= 0;
         end else begin
-            if (state != S_WAIT_INPUT) begin
+            if (~countdown_en) begin
                 num_countdown <= 9;
             end else if (countdown_clk == 1 && countdown_clk_r == 0) begin
                 num_countdown <= num_countdown - 1'b1;
@@ -362,9 +367,12 @@ module gomoku_main(
     assign led_point_flicker_en = state == S_WAIT_INPUT && presseed_keys == 2'b11;
     assign led_point_flicker_color = current_active_part;
 
-    assign led_flicker_clk = state == S_STARTING ? led_flicker_clk_slow : led_flicker_clk_fast;
+    assign led_flicker_clk = (state == S_STARTING || state == S_END) ? led_flicker_clk_slow : led_flicker_clk_fast;
 
     assign led_point_flicker_pos = pos;
+
+    assign color_flicker_en = state == S_END;
+    assign color_flicker_color = ~current_active_part;
 
     // Keyboard
     assign kb_en = state == S_WAIT_INPUT;
@@ -422,9 +430,9 @@ module gomoku_main(
         end
     end
 
-    // RAM read mux
+    // RAM read mux/demux
     always @(*) begin : proc_
-        if (state == S_WAIT_INPUT) begin
+        if (state == S_WAIT_INPUT || state == S_END) begin
             ram_rd_addr     = scanner_rd_addr;
             scanner_rd_data = ram_rd_data;
             judger_rd_data  = 0;

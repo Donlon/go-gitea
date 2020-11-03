@@ -215,8 +215,8 @@ module gomoku_main_tb;
         #10000;
 
         // Reset
-        btn_reset = 1;
-        #1000 btn_reset = 0;
+        //btn_reset = 1;
+        //#1000 btn_reset = 0;
  
         #10000;
         

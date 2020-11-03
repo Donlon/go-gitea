@@ -14,8 +14,8 @@ module display_led_scanner (
     input [5:0] point_flicker_pos,
     input point_flicker_color,
 
-    // input color_flicker_en,
-    // input color_flicker_color,
+    input color_flicker_en,
+    input color_flicker_color,
 
     output [5:0] ram_rd_addr,
     input  [1:0] ram_data,
@@ -83,15 +83,13 @@ module display_led_scanner (
             end else begin
                 patched_ram_data_green = flicker_state;
             end
+        end else if (color_flicker_en) begin
+            if (color_flicker_color == 1) begin
+                if (ram_data[1]) patched_ram_data_red = flicker_state;
+            end else begin
+                if (ram_data[0]) patched_ram_data_green = flicker_state;
+            end
         end
-
-        // if (color_flicker_en) begin
-        //  if (color_flicker_color == 1) begin
-        //      if (ram_data[1]) patched_ram_data_red = flicker_state
-        //  end else begin
-        //      if (ram_data[0]) patched_ram_data_green = flicker_state
-        //  end
-        // end
     end
 
     wire mem_read_bit_inc = mem_read_bit != 3'b111;

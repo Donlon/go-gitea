@@ -81,7 +81,7 @@ module buzzer (
     always @(posedge clk or negedge rst_n) begin : proc_freq_count
         if(~rst_n) begin
             freq_count <= 0;
-            buzzer_out <= 1;
+            buzzer_out <= 0;
         end else begin
             if (en/* && step_count != 3*/) begin
                 if (freq_count == freq_count_max) begin
@@ -92,7 +92,7 @@ module buzzer (
                 end
             end else begin
                 freq_count <= 0;
-                buzzer_out <= 1;
+                buzzer_out <= 0;
             end
         end
     end

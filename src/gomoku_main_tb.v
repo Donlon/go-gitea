@@ -21,6 +21,9 @@ module gomoku_main_tb;
     wire buzzer;
     wire led_red_status;
     wire led_green_status;
+    wire [3:0] num_countdown;
+    wire [3:0] red_win_count;
+    wire [3:0] green_win_count;
     wire [7:0] led_row;
     wire [7:0] led_col_red;
     wire [7:0] led_col_green;
@@ -124,7 +127,10 @@ module gomoku_main_tb;
         .led_green_status(led_green_status), 
         .led_row(led_row), 
         .led_col_red(led_col_red), 
-        .led_col_green(led_col_green), 
+        .led_col_green(led_col_green),
+        .num_countdown(num_countdown),
+        .red_win_count(red_win_count),
+        .green_win_count(green_win_count), 
         .keyboard_row(keyboard_row), 
         .keyboard_col(keyboard_col),
 

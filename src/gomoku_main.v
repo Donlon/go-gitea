@@ -30,9 +30,9 @@ module gomoku_main(
     output [7:0] led_col_red,
     output [7:0] led_col_green,
 
-    output [0:3] num_countdown,
-    // output [0:3] red_win_count,
-    // output [0:3] green_win_count,
+    output reg [3:0] num_countdown,
+    output reg [3:0] red_win_count,
+    output reg [3:0] green_win_count,
 
     // keyboard
     output [3:0] keyboard_col,
@@ -320,6 +320,40 @@ module gomoku_main(
     // Status LED output
     assign led_red_status   = state == S_WAIT_INPUT && current_active_part == `SIDE_RED;
     assign led_green_status = state == S_WAIT_INPUT && current_active_part == `SIDE_GREEN;
+
+    // Countdown LED
+    reg countdown_clk_r;
+    always @(posedge clk) begin : proc_countdown_clk_r
+        countdown_clk_r <= countdown_clk;
+    end
+
+    always @(posedge clk or negedge rst_n) begin : proc_countdown
+        if(~rst_n) begin
+            num_countdown <= 0;
+        end else begin
+            if (state != S_WAIT_INPUT) begin
+                num_countdown <= 9;
+            end else if (countdown_clk == 1 && countdown_clk_r == 0) begin
+                num_countdown <= num_countdown - 1'b1;
+            end
+        end
+    end
+
+    // Win counting
+    always @(posedge clk or negedge rst_n) begin : proc_win_count
+        if(~rst_n) begin
+            red_win_count <= 0;
+            green_win_count <= 0;
+        end else begin
+            if (state == S_JUDGE && judger_done && judger_result == `JUDGER_WIN) begin
+                if (current_active_part == `SIDE_RED) begin
+                    red_win_count   <= red_win_count + 1'b1;
+                end else begin
+                    green_win_count <= green_win_count + 1'b1;
+                end
+            end
+        end
+    end
 
     // LED display
     assign led_screen_flicker_en = state == S_STARTING;

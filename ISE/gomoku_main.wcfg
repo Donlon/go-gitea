@@ -10,7 +10,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="14" />
+   <WVObjectSize size="15" />
    <wvobject fp_name="group23" type="group">
       <obj_property name="label">Clock</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -130,6 +130,10 @@
          <obj_property name="ElementShortName">screen_flicker_count[1:0]</obj_property>
          <obj_property name="ObjectShortName">screen_flicker_count[1:0]</obj_property>
       </wvobject>
+   </wvobject>
+   <wvobject fp_name="group117" type="group">
+      <obj_property name="label">Output</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
       <wvobject fp_name="/gomoku_main_tb/led_red_status" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">led_red_status</obj_property>
          <obj_property name="ObjectShortName">led_red_status</obj_property>
@@ -139,6 +143,11 @@
       <wvobject fp_name="/gomoku_main_tb/led_green_status" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">led_green_status</obj_property>
          <obj_property name="ObjectShortName">led_green_status</obj_property>
+      </wvobject>
+      <wvobject fp_name="/gomoku_main_tb/uut/num_countdown" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">num_countdown[3:0]</obj_property>
+         <obj_property name="ObjectShortName">num_countdown[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
    </wvobject>
    <wvobject fp_name="group77" type="group">

@@ -13,8 +13,8 @@ module top_maxii(
     output [15:0] led,
 
     // seg pin define
-    // output [7:0] seg_data,
-    // output [5:0] seg_sel,
+    output [7:0] seg_data,
+    output [7:0] seg_sel,
 
     // LED Matrix
     output [7:0] led_row,
@@ -57,6 +57,13 @@ module top_maxii(
     assign led[1] = led_green_status;
     assign led[6] = led_flicker_clk_slow;
     assign led[7] = led_flicker_clk_fast;
+
+    // Countdown number
+    wire [3:0] num_countdown;
+
+    // Win count
+    wire [3:0] red_win_count;
+    wire [3:0] green_win_count;
 
     // Clock
     wire clk_2k;
@@ -122,9 +129,9 @@ module top_maxii(
         .led_col_red(led_col_red),
         .led_col_green(led_col_green),
 
-        // output [3:0] num_countdown,
-        // output [3:0] red_win_count,
-        // output [3:0] green_win_count,
+        .num_countdown(num_countdown),
+        .red_win_count(red_win_count),
+        .green_win_count(green_win_count),
 
         // keyboard
         .keyboard_row(keyboard_row),
@@ -132,6 +139,23 @@ module top_maxii(
 
         .led_flicker_clk_rst(led_flicker_clk_rst),
         .countdown_clk_rst(countdown_clk_rst)
+    );
+
+    led_seg_scanner seg_scanner(
+        .scan_clk(clk_100Hz),    // Clock
+        .rst_n(rst_n),  // Asynchronous reset active low
+    
+        .digit_0(red_win_count),
+        .digit_1(0),
+        .digit_2(0),
+        .digit_3(0),
+        .digit_4(num_countdown),
+        .digit_5(0),
+        .digit_6(0),
+        .digit_7(green_win_count),
+
+        .seg_data(seg_data),
+        .seg_sel(seg_sel)
     );
 
     //assign {led[15], led[14]} = main.state;

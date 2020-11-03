@@ -111,6 +111,8 @@ set_global_assignment -name EDA_DESIGN_INSTANCE_NAME NA -section_id clock_divide
 set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME clock_divider_tb -section_id clock_divider_tb
 set_global_assignment -name EDA_TEST_BENCH_FILE ../src/clock_divider_tb.v -section_id clock_divider_tb
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "NO HEAT SINK WITH STILL AIR"
+set_global_assignment -name VERILOG_FILE ../src/seg_decoder.v
+set_global_assignment -name VERILOG_FILE ../src/led_seg_scanner.v
 set_global_assignment -name VERILOG_FILE ../src/buzzer.v
 set_global_assignment -name VERILOG_FILE ../src/buzzer_tb.v
 set_global_assignment -name VERILOG_FILE ../src/checkerboard_state_ram.v

@@ -5,17 +5,17 @@ module clock_divider #(
     input rst_n,
     output reg clk_out
 );
-    function integer clog2; 
-        input integer value; 
+    function integer clog2;
+        input integer value;
         integer temp;
-    begin 
+    begin
         value = value - 1;
         for (temp = 0; value > 0; temp = temp + 1) begin
-            value = value >> 1; 
+            value = value >> 1;
         end
             clog2 = temp;
-        end 
-    endfunction 
+        end
+    endfunction
 
     localparam COUNT_BITS = clog2(DIVISOR / 2);
 

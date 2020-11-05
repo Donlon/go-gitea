@@ -7,8 +7,6 @@ module mem_reset (
     output reg [5:0] ram_addr,
     output reg [1:0] ram_data,
 
-    // output valid,
-    // input ready
     output reg done
 );
     localparam S_IDLE    = 1'b0;

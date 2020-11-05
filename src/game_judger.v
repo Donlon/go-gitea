@@ -8,7 +8,7 @@ module game_judger (
 
     input color,
     input [5:0] pos,
-    
+
     output [5:0] ram_rd_addr,
     input  [1:0] ram_data,
 

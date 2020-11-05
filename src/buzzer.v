@@ -38,7 +38,7 @@ module buzzer (
             default: note_id = 0;
         endcase
         case (note_id)
-            // rtoi is not supported by Quartus II
+            // rtoi is not supported in Quartus II
             0:  freq_count_max_integer = 956; // $rtoi(CLOCK_FREQ / 523.25 / 2); // C5, 1911/2
             1:  freq_count_max_integer = 902; // $rtoi(CLOCK_FREQ / 554.37 / 2); // C#5/Db5
             2:  freq_count_max_integer = 851; // $rtoi(CLOCK_FREQ / 587.33 / 2); // D5
@@ -83,7 +83,7 @@ module buzzer (
             freq_count <= 0;
             buzzer_out <= 0;
         end else begin
-            if (en/* && step_count != 3*/) begin
+            if (en && step_count != 3) begin
                 if (freq_count == freq_count_max) begin
                     buzzer_out <= ~buzzer_out;
                     freq_count <= 0;

@@ -264,10 +264,6 @@
       <obj_property name="ElementShortName">current_active_part</obj_property>
       <obj_property name="ObjectShortName">current_active_part</obj_property>
    </wvobject>
-   <wvobject fp_name="/gomoku_main_tb/buzzer" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">buzzer</obj_property>
-      <obj_property name="ObjectShortName">buzzer</obj_property>
-   </wvobject>
    <wvobject fp_name="/gomoku_main_tb/sw_power" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">sw_power</obj_property>
       <obj_property name="ObjectShortName">sw_power</obj_property>
@@ -287,6 +283,46 @@
       <obj_property name="ObjectShortName">btn_ok_down</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>
       <obj_property name="CustomSignalColor">#ffffff</obj_property>
+   </wvobject>
+   <wvobject fp_name="group130" type="group">
+      <obj_property name="label">New Group</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/gomoku_main_tb/buzzer" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">buzzer</obj_property>
+         <obj_property name="ObjectShortName">buzzer</obj_property>
+      </wvobject>
+      <wvobject fp_name="/gomoku_main_tb/uut/buzzer_inst/clk" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">clk</obj_property>
+         <obj_property name="ObjectShortName">clk</obj_property>
+      </wvobject>
+      <wvobject fp_name="/gomoku_main_tb/uut/buzzer_inst/clk_2" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">clk_2</obj_property>
+         <obj_property name="ObjectShortName">clk_2</obj_property>
+      </wvobject>
+      <wvobject fp_name="/gomoku_main_tb/uut/buzzer_inst/freq_count" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">freq_count[9:0]</obj_property>
+         <obj_property name="ObjectShortName">freq_count[9:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/gomoku_main_tb/uut/buzzer_inst/freq_count_max" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">freq_count_max[9:0]</obj_property>
+         <obj_property name="ObjectShortName">freq_count_max[9:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/gomoku_main_tb/uut/buzzer_inst/step_clock_count" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">step_clock_count[4:0]</obj_property>
+         <obj_property name="ObjectShortName">step_clock_count[4:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/gomoku_main_tb/uut/buzzer_inst/note_count" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">note_count[2:0]</obj_property>
+         <obj_property name="ObjectShortName">note_count[2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/gomoku_main_tb/uut/buzzer_inst/step_count" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">step_count[1:0]</obj_property>
+         <obj_property name="ObjectShortName">step_count[1:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
    </wvobject>
    <wvobject fp_name="group96" type="group">
       <obj_property name="label">Judger</obj_property>

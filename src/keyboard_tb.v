@@ -166,12 +166,12 @@ module keyboard_tb;
 
     always @(*) begin
         if (~is_key_pressed) begin
-            keyboard_row <= 4'b1111;
+            keyboard_row = 4'b1111;
         end else begin
             if (col_keycode == key_code[1:0]) begin
-                keyboard_row <= row_keyarray;
+                keyboard_row = row_keyarray;
             end else begin
-                keyboard_row <= 4'b1111;
+                keyboard_row = 4'b1111;
             end
         end
     end

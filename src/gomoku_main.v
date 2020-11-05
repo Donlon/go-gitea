@@ -42,7 +42,7 @@ module gomoku_main(
     output reg   led_flicker_clk_rst,
     output reg   countdown_clk_rst
 );
-    // === Game status ===
+    // === Game states ===
     reg current_active_part;
     reg [2:0] x_pos;
     reg [2:0] y_pos;
@@ -52,6 +52,9 @@ module gomoku_main(
 
     reg [5:0] piece_count;
     reg screen_flicker_done;
+
+    // control signals
+    wire s_judge_finish;
 
     // FSM
     localparam S_STOPPED     = 3'd0;
@@ -261,15 +264,15 @@ module gomoku_main(
         end
     end
 
+    // Screen flicker
     reg [1:0] screen_flicker_count;
     reg screen_flicker_last_state_r;
     always @(posedge clk) begin : proc_screen_flicker_last_state_r
         screen_flicker_last_state_r <= led_flicker_clk;
     end
 
-    // Screen flicker
     always @(posedge clk or negedge rst_n) begin : proc_screen_flicker_count
-        if(~rst_n) begin
+        if (~rst_n) begin
             screen_flicker_count <= 0;
         end else begin
             if (state != S_STARTING && next_state == S_STARTING) begin
@@ -287,9 +290,7 @@ module gomoku_main(
         screen_flicker_done <= screen_flicker_count == 3;
     end
 
-    wire judger_done_res_valid = (state == S_JUDGE)
-                                 && judger_done
-                                 && (judger_result == `JUDGER_VALID || judger_result == `JUDGER_WIN);
+    assign s_judge_finish = (state == S_JUDGE) && judger_done;
 
     // Game state transfer
     always @(posedge clk or negedge rst_n) begin : proc_state_xfer
@@ -300,7 +301,7 @@ module gomoku_main(
             if (state == S_RESET_STATE) begin
                 current_active_part <= `SIDE_RED;
                 piece_count <= 0;
-            end else if (state == S_JUDGE && judger_done) begin
+            end else if (s_judge_finish && judger_result != `JUDGER_WIN) begin
                 current_active_part <= ~current_active_part;
                 if (judger_result == `JUDGER_VALID) begin
                     piece_count <= piece_count + 1'b1;
@@ -311,12 +312,12 @@ module gomoku_main(
 
     // Clock reset
     always @(posedge clk or negedge rst_n) begin : proc_led_flicker_clk_rst
-        if(~rst_n) begin
+        if (~rst_n) begin
             led_flicker_clk_rst <= 0;
             countdown_clk_rst <= 0;
         end else begin
             led_flicker_clk_rst <= state != S_STARTING && next_state == S_STARTING;
-            countdown_clk_rst   <= state == S_JUDGE && judger_done;
+            countdown_clk_rst   <= s_judge_finish;
         end
     end
 
@@ -333,7 +334,7 @@ module gomoku_main(
     assign countdown_en = state == S_WAIT_INPUT;
 
     always @(posedge clk or negedge rst_n) begin : proc_countdown
-        if(~rst_n) begin
+        if (~rst_n) begin
             num_countdown <= 0;
         end else begin
             if (~countdown_en) begin
@@ -346,11 +347,11 @@ module gomoku_main(
 
     // Win counting
     always @(posedge clk or negedge rst_n) begin : proc_win_count
-        if(~rst_n) begin
+        if (~rst_n) begin
             red_win_count <= 0;
             green_win_count <= 0;
         end else begin
-            if (state == S_JUDGE && judger_done && judger_result == `JUDGER_WIN) begin
+            if (s_judge_finish && judger_result == `JUDGER_WIN) begin
                 if (current_active_part == `SIDE_RED) begin
                     red_win_count   <= red_win_count + 1'b1;
                 end else begin
@@ -372,7 +373,7 @@ module gomoku_main(
     assign led_point_flicker_pos = pos;
 
     assign color_flicker_en = state == S_END;
-    assign color_flicker_color = ~current_active_part;
+    assign color_flicker_color = current_active_part;
 
     // Keyboard
     assign kb_en = state == S_WAIT_INPUT;
@@ -403,7 +404,7 @@ module gomoku_main(
                     presseed_keys[1] <= 1;
                 end
             end
-            if ((state == S_JUDGE && judger_done) || state == S_RESET_STATE) begin
+            if (s_judge_finish || state == S_RESET_STATE) begin
                 presseed_keys <= 0;
             end
         end
@@ -449,7 +450,7 @@ module gomoku_main(
             ram_we_0 <= 0;
             ram_wr_data_0 <= 0; 
         end else begin
-            if (judger_done_res_valid) begin
+            if (s_judge_finish && (judger_result == `JUDGER_VALID || judger_result == `JUDGER_WIN)) begin
                 ram_we_0 <= 1; // write pos to mem
                 ram_wr_data_0 <= current_active_part ? 2'b10 : 2'b01;
             end

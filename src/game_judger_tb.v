@@ -387,6 +387,152 @@ module game_judger_tb;
         {_, _, _, _, _, R, _, R}
     };
 
+    // Diagnoal
+    localparam testcase26_color = `SIDE_GREEN;
+    localparam testcase26_expected_res = `JUDGER_WIN;
+    localparam testcase26_data = {
+        {_, _, _, _, _, _, _, _},
+        {_, _, _, _, _, _, _, _},
+        {_, _, G, _, _, _, _, _},
+        {_, _, _, G, _, _, _, _},
+        {_, _, _, _, G, _, _, _},
+        {_, _, _, _, _, G, _, _},
+        {_, _, _, _, _, _, X, _},
+        {_, _, _, _, _, _, _, _}
+    };
+
+    localparam testcase27_color = `SIDE_GREEN;
+    localparam testcase27_expected_res = `JUDGER_WIN;
+    localparam testcase27_data = {
+        {_, _, G, _, _, _, _, _},
+        {_, _, _, G, _, _, _, _},
+        {_, _, _, _, G, _, _, _},
+        {_, _, _, _, _, G, _, _},
+        {_, _, _, _, _, _, X, _},
+        {_, _, _, _, _, _, _, _},
+        {_, _, _, _, _, _, _, _},
+        {_, _, _, _, _, _, _, _}
+    };
+
+    localparam testcase28_color = `SIDE_GREEN;
+    localparam testcase28_expected_res = `JUDGER_WIN;
+    localparam testcase28_data = {
+        {_, _, _, _, _, _, _, _},
+        {_, _, _, _, _, _, _, _},
+        {_, _, _, _, _, _, _, _},
+        {_, G, _, _, _, _, _, _},
+        {_, _, G, _, _, _, _, _},
+        {_, _, _, G, _, _, _, _},
+        {_, _, _, _, G, _, _, _},
+        {_, _, _, _, _, X, _, _}
+    };
+
+    localparam testcase29_color = `SIDE_GREEN;
+    localparam testcase29_expected_res = `JUDGER_WIN;
+    localparam testcase29_data = {
+        {_, _, _, G, _, _, _, _},
+        {_, _, _, _, G, _, _, _},
+        {_, _, _, _, _, G, _, _},
+        {_, _, _, _, _, _, G, _},
+        {_, _, _, _, _, _, _, X},
+        {_, _, _, _, _, _, _, _},
+        {_, _, _, _, _, _, _, _},
+        {_, _, _, _, _, _, _, _}
+    };
+
+    // D-2
+    localparam testcase30_color = `SIDE_GREEN;
+    localparam testcase30_expected_res = `JUDGER_WIN;
+    localparam testcase30_data = {
+        {_, _, _, _, _, _, _, _},
+        {_, _, _, _, _, _, G, _},
+        {_, _, _, _, _, G, _, _},
+        {_, _, _, _, G, _, _, _},
+        {_, _, _, G, _, _, _, _},
+        {_, _, X, _, _, _, _, _},
+        {_, _, _, _, _, _, _, _},
+        {_, _, _, _, _, _, _, _}
+    };
+
+    localparam testcase31_color = `SIDE_GREEN;
+    localparam testcase31_expected_res = `JUDGER_WIN;
+    localparam testcase31_data = {
+        {_, _, _, _, _, G, _, _},
+        {_, _, _, _, G, _, _, _},
+        {_, _, _, G, _, _, _, _},
+        {_, _, G, _, _, _, _, _},
+        {_, X, _, _, _, _, _, _},
+        {_, _, _, _, _, _, _, _},
+        {_, _, _, _, _, _, _, _},
+        {_, _, _, _, _, _, _, _}
+    };
+
+    localparam testcase32_color = `SIDE_GREEN;
+    localparam testcase32_expected_res = `JUDGER_WIN;
+    localparam testcase32_data = {
+        {_, _, _, _, _, _, _, _},
+        {_, _, _, _, _, _, _, _},
+        {_, _, _, _, _, _, _, _},
+        {_, _, _, _, _, _, G, _},
+        {_, _, _, _, _, G, _, _},
+        {_, _, _, _, G, _, _, _},
+        {_, _, _, G, _, _, _, _},
+        {_, _, X, _, _, _, _, _}
+    };
+
+    localparam testcase33_color = `SIDE_GREEN;
+    localparam testcase33_expected_res = `JUDGER_WIN;
+    localparam testcase33_data = {
+        {_, _, _, _, G, _, _, _},
+        {_, _, _, G, _, _, _, _},
+        {_, _, G, _, _, _, _, _},
+        {_, G, _, _, _, _, _, _},
+        {X, _, _, _, _, _, _, _},
+        {_, _, _, _, _, _, _, _},
+        {_, _, _, _, _, _, _, _},
+        {_, _, _, _, _, _, _, _}
+    };
+
+    // D-O
+    localparam testcase34_color = `SIDE_GREEN;
+    localparam testcase34_expected_res = `JUDGER_VALID;
+    localparam testcase34_data = {
+        {G, G, G, G, _, G, G, G},
+        {G, G, _, G, G, _, _, G},
+        {G, G, G, _, _, _, _, G},
+        {_, G, _, _, G, G, G, _},
+        {X, _, G, _, G, G, _, G},
+        {G, G, G, _, _, _, G, G},
+        {G, _, G, _, G, G, G, G},
+        {G, G, G, G, _, G, G, G}
+    };
+
+    localparam testcase35_color = `SIDE_GREEN;
+    localparam testcase35_expected_res = `JUDGER_VALID;
+    localparam testcase35_data = {
+        {_, _, _, _, R, _, _, _},
+        {_, _, _, G, _, _, _, _},
+        {G, _, G, _, _, _, _, G},
+        {G, G, _, _, _, _, _, G},
+        {X, G, G, G, _, _, _, G},
+        {G, G, _, _, _, _, _, G},
+        {_, _, G, _, _, _, _, _},
+        {_, _, _, G, _, _, _, _}
+    };
+
+    localparam testcase36_color = `SIDE_GREEN;
+    localparam testcase36_expected_res = `JUDGER_VALID;
+    localparam testcase36_data = {
+        {_, _, G, _, G, _, _, _},
+        {_, G, _, _, _, _, _, _},
+        {X, _, G, _, _, _, _, _},
+        {_, G, _, _, _, _, _, _},
+        {G, _, _, _, _, _, _, _},
+        {_, _, _, _, _, _, _, _},
+        {_, _, _, _, _, _, _, _},
+        {_, _, _, _, _, _, _, _}
+    };
+
     integer error_count = 0;
     integer tested_count = 0;
 
@@ -463,7 +609,7 @@ module game_judger_tb;
 
         rst_n = 1;
 
-        for (testcase_index = 1; testcase_index <= 25; testcase_index = testcase_index + 1) begin
+        for (testcase_index = 1; testcase_index <= 35; testcase_index = testcase_index + 1) begin
             case (testcase_index)
                 1:  do_testcase(testcase_index, testcase1_data, testcase1_color, testcase1_expected_res);
                 2:  do_testcase(testcase_index, testcase2_data, testcase2_color, testcase2_expected_res);
@@ -490,6 +636,17 @@ module game_judger_tb;
                 23: do_testcase(testcase_index, testcase23_data, testcase23_color, testcase23_expected_res);
                 24: do_testcase(testcase_index, testcase24_data, testcase24_color, testcase24_expected_res);
                 25: do_testcase(testcase_index, testcase25_data, testcase25_color, testcase25_expected_res);
+                // Diagnoal
+                26: do_testcase(testcase_index, testcase26_data, testcase26_color, testcase26_expected_res);
+                27: do_testcase(testcase_index, testcase27_data, testcase27_color, testcase27_expected_res);
+                28: do_testcase(testcase_index, testcase28_data, testcase28_color, testcase28_expected_res);
+                29: do_testcase(testcase_index, testcase29_data, testcase29_color, testcase29_expected_res);
+                30: do_testcase(testcase_index, testcase30_data, testcase30_color, testcase30_expected_res);
+                31: do_testcase(testcase_index, testcase31_data, testcase31_color, testcase31_expected_res);
+                32: do_testcase(testcase_index, testcase32_data, testcase32_color, testcase32_expected_res);
+                33: do_testcase(testcase_index, testcase33_data, testcase33_color, testcase33_expected_res);
+                34: do_testcase(testcase_index, testcase34_data, testcase34_color, testcase34_expected_res);
+                35: do_testcase(testcase_index, testcase35_data, testcase35_color, testcase35_expected_res);
             endcase
         end
 

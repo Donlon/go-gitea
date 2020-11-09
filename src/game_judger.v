@@ -23,11 +23,11 @@ module game_judger (
 
     localparam TYPE_HORIZONTAL   = 2'b00;
     localparam TYPE_VERTICAL     = 2'b01;
-    localparam TYPE_DIAGNOAL     = 2'b11;
-    localparam TYPE_DIAGNOAL_2   = 2'b10;
+    localparam TYPE_DIAGNOAL     = 2'b10;
+    localparam TYPE_DIAGNOAL_2   = 2'b11;
     localparam FIRST_JUDGE_TYPE  = TYPE_HORIZONTAL;
-    // localparam LAST_JUDGE_TYPE   = TYPE_DIAGNOAL_2;
-    localparam LAST_JUDGE_TYPE   = TYPE_VERTICAL;
+    localparam LAST_JUDGE_TYPE   = TYPE_DIAGNOAL_2;
+    // localparam LAST_JUDGE_TYPE   = TYPE_VERTICAL;
 
     reg [1:0] state, next_state;
     reg [1:0] judge_type, next_judge_type;
@@ -43,7 +43,7 @@ module game_judger (
     assign ram_rd_addr = (state == S_TEST_OVERLAPSED) ? pos : {ram_rd_addr_y, ram_rd_addr_x};
 
     wire pos_inc_reach_boarder =
-        (ram_rd_addr_x == 3'd7 && inc_x_r[2] == 0 && inc_x_r[1:0] != 0) || // right
+        (ram_rd_addr_x == 3'd7 && inc_x_r[2] == 0 && inc_x_r[1:0] != 0) || // right && inc_x_r > 0
         (ram_rd_addr_y == 3'd7 && inc_y_r[2] == 0 && inc_y_r[1:0] != 0) || // bottom && inc_y_r > 0
         (ram_rd_addr_y == 3'd0 && inc_y_r[2] == 1) || // top && inc_y_r < 0
         state == S_TEST_OVERLAPSED;
@@ -96,6 +96,9 @@ module game_judger (
         endcase
     end
 
+    wire [3:0] x_minus_y = {1'b0, pos_x} - {1'b0, pos_y};
+    wire [3:0] x_add_y   = {1'b0, pos_x} + {1'b0, pos_y};
+
     always @(*) begin : proc_jtype
         start_x = 0;
         start_y = 0;
@@ -114,16 +117,26 @@ module game_judger (
                 inc_y = 1;
             end
             TYPE_DIAGNOAL: begin
-                // start_x = pos_x;
-                // start_y = 0;
+                if (~x_minus_y[3]) begin // Region A
+                    start_x = x_minus_y[2:0];
+                    start_y = 0;
+                end else begin // Region B
+                    start_x = 0;
+                    start_y = 0 - x_minus_y[2:0];
+                end
                 inc_x = 1;
-                inc_y = 3'b111; // -1
+                inc_y = 1;
             end
             TYPE_DIAGNOAL_2: begin
-                // start_x = pos_x;
-                // start_y = 0;
-                inc_x = 3'b111; // -1
-                inc_y = 1;
+                if (~x_add_y[3]) begin // Region A
+                    start_y = x_add_y[2:0];
+                    start_x = 0;
+                end else begin // Region B
+                    start_y = 7;
+                    start_x = x_add_y[2:0] + 1;
+                end
+                inc_x = 1;
+                inc_y = 3'b111; // -1
             end
             default: begin
                 start_x = 0;

@@ -105,9 +105,9 @@
       <obj_property name="ElementShortName">key_valid</obj_property>
       <obj_property name="ObjectShortName">key_valid</obj_property>
    </wvobject>
-   <wvobject fp_name="/keyboard_tb/uut/key_ready" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">key_ready</obj_property>
-      <obj_property name="ObjectShortName">key_ready</obj_property>
+   <wvobject fp_name="/keyboard_tb/uut/key_received" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">key_received</obj_property>
+      <obj_property name="ObjectShortName">key_received</obj_property>
    </wvobject>
    <wvobject fp_name="group35" type="group">
       <obj_property name="label">Internal</obj_property>

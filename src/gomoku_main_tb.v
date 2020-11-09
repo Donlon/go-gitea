@@ -21,7 +21,8 @@ module gomoku_main_tb;
     wire buzzer;
     wire led_red_status;
     wire led_green_status;
-    wire [3:0] num_countdown;
+    wire [3:0] num_countdown_h;
+    wire [3:0] num_countdown_l;
     wire [3:0] red_win_count;
     wire [3:0] green_win_count;
     wire [7:0] led_row;
@@ -91,6 +92,18 @@ module gomoku_main_tb;
         end
     endtask
 
+    task task_enter_position_no_commit(integer x, integer y);
+        begin
+            task_press_key(x[2:0] + 8);
+            #1000 task_key_up();
+
+            #4000;
+
+            task_press_key(y[2:0]);
+            #1000 task_key_up();
+        end
+    endtask
+
     always @(*) begin
         col_keycode  <= keycode_encode(keyboard_col);
         row_keyarray <= keycode_decode(key_code[3:2]);
@@ -128,7 +141,8 @@ module gomoku_main_tb;
         .led_row(led_row), 
         .led_col_red(led_col_red), 
         .led_col_green(led_col_green),
-        .num_countdown(num_countdown),
+        .num_countdown_h(num_countdown_h),
+        .num_countdown_l(num_countdown_l),
         .red_win_count(red_win_count),
         .green_win_count(green_win_count), 
         .keyboard_row(keyboard_row), 
@@ -182,41 +196,47 @@ module gomoku_main_tb;
         wait(uut.memrst_done == 1);
 
         // Key 1 / red
-        #1000 task_enter_position(7, 2);
+        #1000 task_enter_position(2, 7);
 
         // Key 2 / green
-        #1000 task_enter_position(7, 2);
+        #1000 task_enter_position(2, 7);
 
-        // Key 3 / red
-        #1000 task_enter_position(7, 3);
+        // Key 3 / red / timed out
+        #50000;
+        // #1000 task_enter_position(3, 7);
 
         // Key 4 / green
-        #1000 task_enter_position(6, 2);
+        #1000 task_enter_position(3, 4);
 
         // Key 5 / red
-        #1000 task_enter_position(7, 4);
+        #1000 task_enter_position(3, 7);
 
         // Key 6 / green
-        #1000 task_enter_position(7, 2);
+        #1000 task_enter_position(4, 4);
 
         // Key 7 / red
-        #1000 task_enter_position(7, 5);
+        #1000 task_enter_position(4, 7);
 
         // Key 8 / green
-        #1000 task_enter_position(3, 2);
+        #1000 task_enter_position(5, 4);
 
-        // Key 9 / red
-        #1000 task_enter_position(7, 6);
+        // Key 9 / red / timed out
+        #1000 task_enter_position_no_commit(5, 7);
+        #50000;
 
+        // Key 10 / green
+        #1000 task_enter_position(6, 4);
 
+        // Key 11 / red
+        #1000 task_enter_position(6, 7);
 
 
         // End
-        #10000;
+        #20000;
 
         // Reset
-        //btn_reset = 1;
-        //#1000 btn_reset = 0;
+        btn_reset = 1;
+        #1000 btn_reset = 0;
  
         #10000;
         

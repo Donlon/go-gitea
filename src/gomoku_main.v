@@ -30,7 +30,8 @@ module gomoku_main(
     output [7:0] led_col_red,
     output [7:0] led_col_green,
 
-    output reg [3:0] num_countdown,
+    output reg [3:0] num_countdown_h,
+    output reg [3:0] num_countdown_l,
     output           countdown_en,
     output reg [3:0] red_win_count,
     output reg [3:0] green_win_count,
@@ -43,7 +44,7 @@ module gomoku_main(
     output reg   countdown_clk_rst
 );
     // === Game states ===
-    reg current_active_part;
+    reg current_active_side;
     reg [2:0] x_pos;
     reg [2:0] y_pos;
     wire [5:0] pos = {y_pos, x_pos};
@@ -53,7 +54,7 @@ module gomoku_main(
     reg [5:0] piece_count;
     reg screen_flicker_done;
 
-    // control signals
+    // Control signals
     wire s_judge_finish;
 
     // FSM
@@ -156,7 +157,7 @@ module gomoku_main(
 
     wire [3:0] kb_pressed_key;
     wire kb_key_valid;
-    reg  kb_key_ready;
+    reg  kb_key_received;
 
     keyboard kb_inst(
         .scan_clk(kb_scan_clk), // low speed scan clock
@@ -169,7 +170,7 @@ module gomoku_main(
 
         .pressed_index(kb_pressed_key),
         .key_valid(kb_key_valid),
-        .key_ready(kb_key_ready)
+        .key_received(kb_key_received)
     );
 
     // btn_ok test
@@ -197,7 +198,7 @@ module gomoku_main(
         .en(judger_en),
         .rst_n(rst_n),
 
-        .color(current_active_part),
+        .color(current_active_side),
         .pos(pos),
 
         .ram_rd_addr(judger_rd_addr),
@@ -214,9 +215,14 @@ module gomoku_main(
         .clk_2(buzzer_clk_2), // Clock 200Hz
         .rst_n(rst_n),
         .en(buzzer_en),
-        
+
         .buzzer_out(buzzer_out)
     );
+
+    // Countdown logic
+    assign countdown_en = state == S_WAIT_INPUT;
+    wire countdown_next = countdown_clk == 1 && countdown_clk_r == 0;
+    wire timed_out = countdown_next && num_countdown_h == 0 && num_countdown_l == 0;
 
     // FSM logic
     always @(posedge clk or negedge rst_n) begin : proc_state
@@ -236,9 +242,13 @@ module gomoku_main(
                 if (screen_flicker_done) next_state = S_RESET_STATE;
             S_RESET_STATE:
                 if (memrst_done) next_state = S_WAIT_INPUT;
-            S_WAIT_INPUT:
-                if (presseed_keys == 2'b11 && btn_ok_down) // both x and y pos were input
+            S_WAIT_INPUT: begin
+                if (presseed_keys == 2'b11 && (btn_ok_down || timed_out)) begin
+                    // btn_ok_down: both x and y pos were input
+                    // timed_out:   timed-out and auto commit
                     next_state = S_JUDGE;
+                end
+            end
             S_JUDGE:
                 if (judger_done) begin
                     if (judger_result == `JUDGER_WIN) begin
@@ -275,13 +285,12 @@ module gomoku_main(
         if (~rst_n) begin
             screen_flicker_count <= 0;
         end else begin
-            if (state != S_STARTING && next_state == S_STARTING) begin
-                screen_flicker_count <= 0;
-            end
             if (state == S_STARTING) begin
                 if (screen_flicker_last_state_r == 1 && led_flicker_clk == 0) begin
-					 screen_flicker_count <= screen_flicker_count + 1'b1;
+                     screen_flicker_count <= screen_flicker_count + 1'b1;
                 end
+            end else if (next_state == S_STARTING) begin
+                screen_flicker_count <= 0;
             end
         end
     end
@@ -295,14 +304,16 @@ module gomoku_main(
     // Game state transfer
     always @(posedge clk or negedge rst_n) begin : proc_state_xfer
         if (~rst_n) begin
-            current_active_part <= `SIDE_RED;
+            current_active_side <= `SIDE_RED;
             piece_count <= 0;
         end else begin
             if (state == S_RESET_STATE) begin
-                current_active_part <= `SIDE_RED;
+                current_active_side <= `SIDE_RED;
                 piece_count <= 0;
-            end else if (s_judge_finish && judger_result != `JUDGER_WIN) begin
-                current_active_part <= ~current_active_part;
+            end else if (timed_out && next_state == S_WAIT_INPUT) begin
+                current_active_side <= ~current_active_side;
+            end if (s_judge_finish && judger_result != `JUDGER_WIN) begin
+                current_active_side <= ~current_active_side;
                 if (judger_result == `JUDGER_VALID) begin
                     piece_count <= piece_count + 1'b1;
                 end
@@ -322,8 +333,8 @@ module gomoku_main(
     end
 
     // Status LED output
-    assign led_red_status   = state == S_WAIT_INPUT && current_active_part == `SIDE_RED;
-    assign led_green_status = state == S_WAIT_INPUT && current_active_part == `SIDE_GREEN;
+    assign led_red_status   = state == S_WAIT_INPUT && current_active_side == `SIDE_RED;
+    assign led_green_status = state == S_WAIT_INPUT && current_active_side == `SIDE_GREEN;
 
     // Countdown LED
     reg countdown_clk_r;
@@ -331,16 +342,21 @@ module gomoku_main(
         countdown_clk_r <= countdown_clk;
     end
 
-    assign countdown_en = state == S_WAIT_INPUT;
-
     always @(posedge clk or negedge rst_n) begin : proc_countdown
         if (~rst_n) begin
-            num_countdown <= 0;
+            num_countdown_h <= 0;
+            num_countdown_l <= 0;
         end else begin
-            if (~countdown_en) begin
-                num_countdown <= 9;
-            end else if (countdown_clk == 1 && countdown_clk_r == 0) begin
-                num_countdown <= num_countdown - 1'b1;
+            if (~countdown_en || timed_out) begin
+                num_countdown_h <= 2;
+                num_countdown_l <= 0;
+            end else if (countdown_next) begin
+                if (num_countdown_l == 0) begin
+                    num_countdown_h <= num_countdown_h - 1'b1;
+                    num_countdown_l <= 9;
+                end else begin
+                    num_countdown_l <= num_countdown_l - 1'b1;
+                end
             end
         end
     end
@@ -352,7 +368,7 @@ module gomoku_main(
             green_win_count <= 0;
         end else begin
             if (s_judge_finish && judger_result == `JUDGER_WIN) begin
-                if (current_active_part == `SIDE_RED) begin
+                if (current_active_side == `SIDE_RED) begin
                     red_win_count   <= red_win_count + 1'b1;
                 end else begin
                     green_win_count <= green_win_count + 1'b1;
@@ -366,26 +382,26 @@ module gomoku_main(
     assign led_scanner_en = state != S_STOPPED && state != S_RESET_STATE;
 
     assign led_point_flicker_en = state == S_WAIT_INPUT && presseed_keys == 2'b11;
-    assign led_point_flicker_color = current_active_part;
+    assign led_point_flicker_color = current_active_side;
 
     assign led_flicker_clk = (state == S_STARTING || state == S_END) ? led_flicker_clk_slow : led_flicker_clk_fast;
 
     assign led_point_flicker_pos = pos;
 
     assign color_flicker_en = state == S_END;
-    assign color_flicker_color = current_active_part;
+    assign color_flicker_color = current_active_side;
 
     // Keyboard
     assign kb_en = state == S_WAIT_INPUT;
 
     always @(posedge clk) begin : proc_keyboard
         if (~rst_n) begin
-            kb_key_ready <= 0;
+            kb_key_received <= 0;
         end else begin
             if (kb_key_valid) begin
-                kb_key_ready <= 1;
+                kb_key_received <= 1;
             end else begin
-                kb_key_ready <= 0;
+                kb_key_received <= 0;
             end
         end
     end
@@ -404,7 +420,7 @@ module gomoku_main(
                     presseed_keys[1] <= 1;
                 end
             end
-            if (s_judge_finish || state == S_RESET_STATE) begin
+            if (timed_out || s_judge_finish || state == S_RESET_STATE) begin
                 presseed_keys <= 0;
             end
         end
@@ -452,10 +468,10 @@ module gomoku_main(
         end else begin
             if (s_judge_finish && (judger_result == `JUDGER_VALID || judger_result == `JUDGER_WIN)) begin
                 ram_we_0 <= 1; // write pos to mem
-                ram_wr_data_0 <= current_active_part ? 2'b10 : 2'b01;
-            end
-            if (state == S_WAIT_INPUT || state == S_END)
+                ram_wr_data_0 <= current_active_side ? 2'b10 : 2'b01;
+            end else begin
                 ram_we_0 <= 0;
+            end
         end
     end
 

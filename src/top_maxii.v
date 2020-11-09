@@ -60,7 +60,7 @@ module top_maxii(
     // assign led[7] = led_flicker_clk_fast;
 
     // Countdown number
-    wire [3:0] num_countdown;
+    wire [3:0] num_countdown_h, num_countdown_l;
     wire countdown_en;
 
     // Win count
@@ -131,7 +131,8 @@ module top_maxii(
         .led_col_red(led_col_red),
         .led_col_green(led_col_green),
 
-        .num_countdown(num_countdown),
+        .num_countdown_h(num_countdown_h),
+        .num_countdown_l(num_countdown_l),
         .countdown_en(countdown_en),
         .red_win_count(red_win_count),
         .green_win_count(green_win_count),
@@ -151,8 +152,8 @@ module top_maxii(
         .digit_0(red_win_count),
         .digit_1(0),
         .digit_2(0),
-        .digit_3(0),
-        .digit_4(num_countdown),
+        .digit_3(num_countdown_h),
+        .digit_4(num_countdown_l),
         .digit_5(0),
         .digit_6(0),
         .digit_7(green_win_count),
@@ -160,7 +161,7 @@ module top_maxii(
         .digit_en_0(1),
         .digit_en_1(0),
         .digit_en_2(0),
-        .digit_en_3(0),
+        .digit_en_3(countdown_en),
         .digit_en_4(countdown_en),
         .digit_en_5(0),
         .digit_en_6(0),

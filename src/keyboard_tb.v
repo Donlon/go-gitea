@@ -18,7 +18,7 @@ module keyboard_tb;
     reg [3:0] row_keyarray;
 
     wire kb_key_valid;
-    reg  kb_key_ready;
+    reg  kb_key_received;
     wire[3:0] kb_pressed_index;
 
     // Instantiate the Unit Under Test (UUT)
@@ -31,7 +31,7 @@ module keyboard_tb;
         .keyboard_col(keyboard_col),
 
         .key_valid(kb_key_valid),
-        .key_ready(kb_key_ready),
+        .key_received(kb_key_received),
 
         .pressed_index(kb_pressed_index)
     );
@@ -79,7 +79,7 @@ module keyboard_tb;
             if (en) begin
                 wait(kb_key_valid == 1);
                 #0.5;
-                kb_key_ready = 1;
+                kb_key_received = 1;
                 if (kb_pressed_index != key) begin
                     $display("[ERROR] [%0d] keycode should be %4b but %4b",
                              tested_count,  key, kb_pressed_index);
@@ -87,7 +87,7 @@ module keyboard_tb;
                 end
 
                 wait(kb_key_valid == 0);
-                kb_key_ready = 0;
+                kb_key_received = 0;
             end
             #(keydown_duration) task_key_up();
             tested_count = tested_count + 1;
@@ -106,7 +106,7 @@ module keyboard_tb;
         keyboard_row = 0;
         is_key_pressed = 0;
         key_code = 0;
-        kb_key_ready = 0;
+        kb_key_received = 0;
 
         // Wait 100 ns for global reset to finish
         #2;

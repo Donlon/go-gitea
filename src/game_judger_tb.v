@@ -29,8 +29,8 @@ module game_judger_tb;
         .wr_addr(ram_wr_addr),
         .wr_data(ram_wr_data),
 
-        .rd_addr_1(ram_rd_addr),
-        .rd_data_out_1(ram_rd_data_out)
+        .rd_addr(ram_rd_addr),
+        .rd_data_out(ram_rd_data_out)
     );
 
     // Instantiate the Unit Under Test (UUT)

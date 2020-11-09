@@ -9,7 +9,7 @@ module keyboard(
 
     output reg [3:0] pressed_index,
     output reg       key_valid,
-    input            key_ready
+    input            key_received
 );
 
     wire rst_n_ = rst_n && en;
@@ -71,7 +71,7 @@ module keyboard(
         end else begin
             if (keydown_status != keydown_status_r) begin
                 key_valid <= 1;
-            end else if (key_valid && key_ready) begin
+            end else if (key_valid && key_received) begin
                 key_valid <= 0;
             end
         end

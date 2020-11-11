@@ -22,8 +22,8 @@ module gomoku_main(
     output buzzer_out,
 
     // LED Pin define
-    output led_red_status,
-    output led_green_status,
+    output reg led_red_status,
+    output reg led_green_status,
 
     /// LED Matrix
     output [7:0] led_row,
@@ -56,6 +56,7 @@ module gomoku_main(
 
     // Control signals
     wire s_judge_finish;
+    wire game_draw = piece_count == 6'd63;
 
     // FSM
     localparam S_STOPPED     = 3'd0;
@@ -253,7 +254,7 @@ module gomoku_main(
                 if (judger_done) begin
                     if (judger_result == `JUDGER_WIN) begin
                         next_state = S_END;
-                    end else if (judger_result == `JUDGER_VALID && piece_count == 6'd63) begin
+                    end else if (game_draw && judger_result == `JUDGER_VALID) begin
                         next_state = S_END;
                     end else begin
                         next_state = S_WAIT_INPUT;
@@ -296,7 +297,7 @@ module gomoku_main(
     end
 
     always @(*) begin : proc_screen_flicker_done
-        screen_flicker_done <= screen_flicker_count == 3;
+        screen_flicker_done <= screen_flicker_count == 2;
     end
 
     assign s_judge_finish = (state == S_JUDGE) && judger_done;
@@ -314,7 +315,7 @@ module gomoku_main(
                 current_active_side <= ~current_active_side;
             end if (s_judge_finish && judger_result != `JUDGER_WIN) begin
                 current_active_side <= ~current_active_side;
-                if (judger_result == `JUDGER_VALID) begin
+                if (judger_result == `JUDGER_VALID && ~game_draw) begin
                     piece_count <= piece_count + 1'b1;
                 end
             end
@@ -333,8 +334,15 @@ module gomoku_main(
     end
 
     // Status LED output
-    assign led_red_status   = state == S_WAIT_INPUT && current_active_side == `SIDE_RED;
-    assign led_green_status = state == S_WAIT_INPUT && current_active_side == `SIDE_GREEN;
+    always @(*) begin : proc_led_status
+        if (state == S_END && game_draw) begin
+            led_red_status   = led_flicker_clk_fast;
+            led_green_status = led_flicker_clk_fast;
+        end else begin
+            led_red_status   = state == S_WAIT_INPUT && current_active_side == `SIDE_RED;
+            led_green_status = state == S_WAIT_INPUT && current_active_side == `SIDE_GREEN;
+        end
+    end
 
     // Countdown LED
     reg countdown_clk_r;
@@ -349,7 +357,7 @@ module gomoku_main(
         end else begin
             if (~countdown_en || timed_out) begin
                 num_countdown_h <= 2;
-                num_countdown_l <= 0;
+                num_countdown_l <= 5;
             end else if (countdown_next) begin
                 if (num_countdown_l == 0) begin
                     num_countdown_h <= num_countdown_h - 1'b1;
@@ -364,10 +372,13 @@ module gomoku_main(
     // Win counting
     always @(posedge clk or negedge rst_n) begin : proc_win_count
         if (~rst_n) begin
-            red_win_count <= 0;
+            red_win_count   <= 0;
             green_win_count <= 0;
         end else begin
-            if (s_judge_finish && judger_result == `JUDGER_WIN) begin
+            if (~sw_power) begin
+                red_win_count   <= 0;
+                green_win_count <= 0;
+            end else if (s_judge_finish && judger_result == `JUDGER_WIN) begin
                 if (current_active_side == `SIDE_RED) begin
                     red_win_count   <= red_win_count + 1'b1;
                 end else begin
@@ -388,7 +399,7 @@ module gomoku_main(
 
     assign led_point_flicker_pos = pos;
 
-    assign color_flicker_en = state == S_END;
+    assign color_flicker_en = state == S_END && ~game_draw;
     assign color_flicker_color = current_active_side;
 
     // Keyboard

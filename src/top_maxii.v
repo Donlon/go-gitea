@@ -54,10 +54,7 @@ module top_maxii(
     wire led_green_status;
 
     assign led[15] = led_red_status;
-    // assign led[1]  = led_green_status;
-    assign led[2]  = led_green_status;
-    // assign led[6] = led_flicker_clk_slow;
-    // assign led[7] = led_flicker_clk_fast;
+    assign led[1]  = led_green_status;
 
     // Countdown number
     wire [3:0] num_countdown_h, num_countdown_l;
@@ -79,8 +76,8 @@ module top_maxii(
     wire key_debounce_clk = clk_100Hz;
     wire buzzer_clk = clk;
     wire buzzer_clk_2 = clk_200Hz;
-    wire led_flicker_clk_slow = clk_2Hz;
-    wire led_flicker_clk_fast = clk_1Hz;
+    wire led_flicker_clk_slow = clk_1Hz;
+    wire led_flicker_clk_fast = clk_2Hz;
     wire countdown_clk = clk_1Hz;
 
     wire led_flicker_clk_rst;

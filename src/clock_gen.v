@@ -45,7 +45,7 @@ module clock_gen #(
     )
     div3(
         .clk(clk_100Hz),
-        .rst_n(rst_n && ~clk_2Hz_rst && ~clk_1Hz),
+        .rst_n(rst_n && ~clk_2Hz_rst && ~clk_1Hz_rst),
         .clk_out(clk_2Hz)
     );
 

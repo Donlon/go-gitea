@@ -84,7 +84,7 @@ module display_led_scanner (
                 patched_ram_data_green = flicker_state;
             end
         end else if (color_flicker_en) begin
-            if (color_flicker_color == 1) begin
+            if (color_flicker_color == `SIDE_RED) begin
                 if (ram_data[1]) patched_ram_data_red = flicker_state;
             end else begin
                 if (ram_data[0]) patched_ram_data_green = flicker_state;

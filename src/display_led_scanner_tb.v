@@ -3,17 +3,17 @@
 
 module display_led_scanner_tb;
 
-	// Inputs
-	reg clk;
-	reg scan_clk;
-	reg en;
-	reg rst_n;
+    // Inputs
+    reg clk;
+    reg scan_clk;
+    reg en;
+    reg rst_n;
 
-	reg flicker_clk;
-	reg screen_flicker_en;
-	reg point_flicker_en;
-	reg [5:0] point_flicker_pos;
-	reg point_flicker_color;
+    reg flicker_clk;
+    reg screen_flicker_en;
+    reg point_flicker_en;
+    reg [5:0] point_flicker_pos;
+    reg point_flicker_color;
 
     reg ram_we;
     reg [5:0] ram_wr_addr;
@@ -22,30 +22,33 @@ module display_led_scanner_tb;
     wire [5:0] ram_rd_addr;
     wire [1:0] ram_rd_data_out;
 
-	// Outputs
-	wire [7:0] led_row;
-	wire [7:0] led_col_red;
-	wire [7:0] led_col_green;
+    // Outputs
+    wire [7:0] led_row;
+    wire [7:0] led_col_red;
+    wire [7:0] led_col_green;
 
-	// Instantiate the Unit Under Test (UUT)
-	display_led_scanner uut (
-		.scan_clk(scan_clk), 
-		.clk(clk), 
-		.en(en), 
-		.rst_n(rst_n), 
-		.flicker_clk(flicker_clk), 
-		.screen_flicker_en(screen_flicker_en), 
-		.point_flicker_en(point_flicker_en), 
-		.point_flicker_pos(point_flicker_pos), 
-		.point_flicker_color(point_flicker_color), 
+    // Instantiate the Unit Under Test (UUT)
+    display_led_scanner uut (
+        .scan_clk(scan_clk), 
+        .clk(clk), 
+        .en(en), 
+        .rst_n(rst_n), 
+        .flicker_clk(flicker_clk), 
+        .screen_flicker_en(screen_flicker_en), 
+        .point_flicker_en(point_flicker_en), 
+        .point_flicker_pos(point_flicker_pos), 
+        .point_flicker_color(point_flicker_color), 
 
-		.ram_rd_addr(ram_rd_addr), 
-		.ram_data(ram_rd_data_out), 
+        .color_flicker_en(0),
+        .color_flicker_color(0),
 
-		.led_row(led_row), 
-		.led_col_red(led_col_red), 
-		.led_col_green(led_col_green)
-	);
+        .ram_rd_addr(ram_rd_addr), 
+        .ram_data(ram_rd_data_out), 
+
+        .led_row(led_row), 
+        .led_col_red(led_col_red), 
+        .led_col_green(led_col_green)
+    );
 
     checkerboard_state_ram ram (
         .clk(clk),
@@ -55,8 +58,8 @@ module display_led_scanner_tb;
         .wr_addr(ram_wr_addr),
         .wr_data(ram_wr_data),
 
-        .rd_addr_1(ram_rd_addr),
-        .rd_data_out_1(ram_rd_data_out)
+        .rd_addr(ram_rd_addr),
+        .rd_data_out(ram_rd_data_out)
     );
 
     localparam TESTCASE_DATA_SIZE = 8 * 8 * 2;
@@ -115,24 +118,24 @@ module display_led_scanner_tb;
     always #0.5 clk = ~clk;
     always #10 scan_clk = ~scan_clk;
     always #500 flicker_clk = ~flicker_clk;
-	initial begin
-		// Initialize Inputs
-		scan_clk = 0;
-		clk = 0;
-		en = 0;
-		rst_n = 0;
-		flicker_clk = 0;
-		screen_flicker_en = 0;
-		point_flicker_en = 0;
-		point_flicker_pos = 0;
-		point_flicker_color = 0;
+    initial begin
+        // Initialize Inputs
+        scan_clk = 0;
+        clk = 0;
+        en = 0;
+        rst_n = 0;
+        flicker_clk = 0;
+        screen_flicker_en = 0;
+        point_flicker_en = 0;
+        point_flicker_pos = 0;
+        point_flicker_color = 0;
 
-		write_testcase(testcase_data2);
-		#10;
-		rst_n = 1;
+        write_testcase(testcase_data);
+        #10;
+        rst_n = 1;
         en = 1;
-		// Wait 100 ns for global reset to finish
-		#1000;
+        // Wait 100 ns for global reset to finish
+        #1000;
 
         // Clear memory
         write_testcase(testcase_empty);
@@ -153,7 +156,7 @@ module display_led_scanner_tb;
         #4000;
         
         $stop;
-	end
+    end
       
 endmodule
 

@@ -1,61 +1,28 @@
 module spi_mem (
     input clk,    // Clock
     input rst_n,  // Asynchronous reset active low
-    
-    // Arbitration
-    input  req_1,
-    output grant_1,
-    input  req_2,
-    output grant_2,
-    input  req_3,
-    output grant_3,
 
-    // data interface
-    input we_1,
-    input  [5:0] addr_1,
-    input  [1:0] wr_data_1,
-    // output [1:0] data_1,
-    input  [5:0] addr_2,
-    output [1:0] data_2,
-    input  [5:0] addr_3,
-    output [1:0] data_3,
+    // Data interface
+    input            wr_en,
+    input  [5:0]     addr,
+    output reg [7:0] rd_data,
+    input      [7:0] wr_data,
 
-    // SPI intterface
+    // SPI interface
     output reg spi_clk,
     output reg spi_cs,
     input      spi_si,
     output     spi_so,
 
     // Callback interface
+    input en,
     output reg valid
 );
-
-    spi_mem_arbiter arbiter (
-        .clk(clk),
-        .rst_n(rst_n),
-        
-        .req_1(req_1),
-        .req_2(req_2),
-        .req_3(req_3),
-        .req_4(req_4),
-
-        .grant_1(grant_1),
-        .grant_2(grant_2),
-        .grant_3(grant_3),
-        .grant_4(grant_4)
-    );
 
     localparam FM25L16_OP_WRITE = 8'b00000010;
     localparam FM25L16_OP_READ  = 8'b00000011;
 
-    wire grant = grant_1 || grant_2;
-    wire rd_en = ~we_1;
-    wire [1:0] wr_data = wr_data_1;
-    wire [5:0] addr = (grant_1 & addr_1) | (grant_2 & addr_2) | (grant_3 & addr_3);
-
-    reg [7:0] rd_data;
-    assign data_2 = grant_2 & {2{rd_data}};
-    assign data_3 = grant_3 & {2{rd_data}};
+    wire rd_en = ~wr_en;
     
     // wire spi_clk_rising;
     // wire spi_clk_falling;
@@ -75,9 +42,9 @@ module spi_mem (
 
     always @(*) begin : proc_fm25l16_op
         if (rd_en) begin
-            fm25l16_op = FM25L16_OP_WRITE;
-        end else begin
             fm25l16_op = FM25L16_OP_READ;
+        end else begin
+            fm25l16_op = FM25L16_OP_WRITE;
         end
     end
 
@@ -120,11 +87,11 @@ module spi_mem (
 
         case (state)
             S_IDLE:
-                if (grant && ~valid)
+                if (en && ~valid)
                     next_state = S_WRITE;
             S_WRITE:
                 if (rd_en) begin
-                    if (byte_count == 2 && bit_count == 7) begin
+                    if (byte_count == 3 && bit_count == 7) begin
                         next_state = S_READ;
                     end
                 end else begin
@@ -136,7 +103,7 @@ module spi_mem (
                     end
                 end
             S_READ:
-                if (byte_count == 2 && bit_count == 7) begin
+                if (byte_count == 4 && bit_count == 0) begin
                     next_state = S_IDLE;
                 end
             default:
@@ -220,11 +187,13 @@ module spi_mem (
     always @(posedge clk or negedge rst_n) begin : proc_rx_buffer
         if(~rst_n) begin
             rx_buffer <= 0;
+            rd_data <= 0;
         end else begin
-            if (state == S_READ && ~spi_clk) begin // read on rising edge of spi_clk
+            if (state == S_READ && spi_clk) begin // read on rising edge of spi_clk
                 rx_buffer <= {rx_buffer[6:0], spi_si}; // MSB first
+            end else if (next_state == S_IDLE) begin
+                rd_data <= rx_buffer;
             end
-            rd_data <= rx_buffer; // TODO:...
         end
     end
 
@@ -232,7 +201,7 @@ module spi_mem (
         if(~rst_n) begin
             valid <= 0;
         end else begin
-            if (~grant) begin
+            if (~en) begin
                 valid <= 0;
             end else if (state != S_IDLE && next_state == S_IDLE) begin
                 valid <= 1;

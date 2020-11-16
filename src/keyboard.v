@@ -14,11 +14,8 @@ module keyboard(
 
     wire rst_n_ = rst_n && en;
 
-    reg [1:0] row_code;
-
     reg [1:0] scan_seq;
-
-    wire col_injection = scan_seq != 2'b11;
+    reg [1:0] row_code;
 
     always @(posedge scan_clk or negedge rst_n_) begin
         if (~rst_n_) begin
@@ -32,7 +29,7 @@ module keyboard(
         if (~rst_n_) begin
             keyboard_col <= 4'b1111;
         end else begin
-            keyboard_col <= {col_injection, keyboard_col[3:1]};
+            keyboard_col <= {scan_seq != 2'b11, keyboard_col[3:1]};
         end
     end
 
@@ -65,6 +62,10 @@ module keyboard(
         end
     end
 
+    always @(posedge clk) begin : proc_keydown_status_r
+        keydown_status_r <= keydown_status;
+    end
+
     always @(posedge clk or negedge rst_n_) begin
         if (~rst_n_) begin
             key_valid <= 0;
@@ -75,9 +76,5 @@ module keyboard(
                 key_valid <= 0;
             end
         end
-    end
-
-    always @(posedge clk) begin : proc_keydown_status_r
-        keydown_status_r <= keydown_status;
     end
 endmodule

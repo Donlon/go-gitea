@@ -182,8 +182,8 @@ module game_judger (
         end
     end
 
-    wire din_red   = ram_data[1];
-    wire din_green = ram_data[0];
+    wire din_red   = ram_data[1]; // Data in - red
+    wire din_green = ram_data[0]; // Data in - green
 
     wire mem_rd_color_matched = 
             (color == `SIDE_RED && din_red) || (color == `SIDE_GREEN && din_green);
@@ -195,9 +195,9 @@ module game_judger (
             successive_count <= 0;
         end else begin
             case ({pos_inc_reach_boarder_r, inc_suc_count})
-                2'b10: successive_count <= 0;
-                2'b11: successive_count <= 1'b1;
-                2'b01: successive_count <= successive_count + 1'b1;
+                2'b10:   successive_count <= 0;
+                2'b11:   successive_count <= 1'b1;
+                2'b01:   successive_count <= successive_count + 1'b1;
                 default: successive_count <= 0;
             endcase
         end

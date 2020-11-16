@@ -59,13 +59,11 @@ module display_led_scanner (
         end
     end
 
-    wire led_row_injection = current_scan_row != 3'b111;
-
     always @(posedge scan_clk or negedge rst_n_) begin
         if (~rst_n_) begin
             led_row <= {8{1'b1}};
         end else begin
-            led_row <= {led_row_injection, led_row[7:1]};
+            led_row <= {current_scan_row != 3'b111, led_row[7:1]};
         end
     end
 

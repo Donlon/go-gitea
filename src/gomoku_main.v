@@ -389,8 +389,8 @@ module gomoku_main(
     end
 
     // LED display
-    assign led_screen_flicker_en = state == S_STARTING;
     assign led_scanner_en = state != S_STOPPED && state != S_RESET_STATE;
+    assign led_screen_flicker_en = state == S_STARTING;
 
     assign led_point_flicker_en = state == S_WAIT_INPUT && presseed_keys == 2'b11;
     assign led_point_flicker_color = current_active_side;

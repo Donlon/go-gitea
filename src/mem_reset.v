@@ -3,12 +3,16 @@ module mem_reset (
     input en, // Clock Enable
     input rst_n,  // Asynchronous reset active low
 
-    output reg ram_we,
-    output reg [5:0] ram_addr,
-    output reg [1:0] ram_data,
+    output reg mem_en,
+    input  reg mem_valid,
+    output reg [5:0] mem_addr,
+    output     [1:0] mem_data,
 
     output reg done
 );
+
+    assign mem_data = 0;
+
     localparam S_IDLE    = 1'b0;
     localparam S_WORKING = 1'b1;
 
@@ -22,10 +26,11 @@ module mem_reset (
                 if (en && ~done)
                     next_state <= S_WORKING;
             S_WORKING:
-                if (ram_addr == 6'b111111)
+                if (mem_addr == 6'b111111 && mem_valid && mem_en) begin
                     next_state <= S_IDLE;
-                else
+                end else begin
                     next_state <= S_WORKING;
+                end
         endcase
     end
 
@@ -39,16 +44,12 @@ module mem_reset (
 
     always @(posedge clk or negedge rst_n) begin : proc_update_addr
         if (~rst_n) begin
-            ram_addr <= 0;
+            mem_addr <= 0;
         end else begin
-            if (state == S_WORKING)
-                ram_addr <= ram_addr + 1'b1;
+            if (state == S_WORKING && mem_valid && mem_en) begin
+                mem_addr <= mem_addr + 1'b1;
+            end
         end
-    end
-
-    always @(*) begin : proc_ram_data
-        ram_we = state == S_WORKING;
-        ram_data = 0;
     end
 
     always @(posedge clk or negedge rst_n) begin : proc_callback
@@ -59,6 +60,22 @@ module mem_reset (
                 done <= 0;
             if (state == S_WORKING && next_state == S_IDLE)
                 done <= 1;
+        end
+    end
+
+    always @(posedge clk or negedge rst_n) begin : proc_mem_en
+        if(~rst_n) begin
+            mem_en <= 0;
+        end else begin
+            if (mem_en) begin
+                if (mem_valid) begin
+                    mem_en <= 0;
+                end
+            end else begin
+                if (next_state == S_WORKING && ~mem_valid) begin
+                    mem_en <= 1;
+                end
+            end
         end
     end
 endmodule

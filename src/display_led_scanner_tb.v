@@ -15,17 +15,31 @@ module display_led_scanner_tb;
     reg [5:0] point_flicker_pos;
     reg point_flicker_color;
 
-    reg ram_we;
-    reg [5:0] ram_wr_addr;
-    reg [1:0] ram_wr_data;
-
-    wire [5:0] ram_rd_addr;
-    wire [1:0] ram_rd_data_out;
+    wire mem_busy = 0;
+    wire mem_en;
+    wire mem_valid;
+    wire [5:0] mem_addr;
+    wire [7:0] mem_rd_data;
 
     // Outputs
     wire [7:0] led_row;
     wire [7:0] led_col_red;
     wire [7:0] led_col_green;
+
+    spi_mem_emu mem(
+        .clk(clk),    ///* Clock
+        .rst_n(rst_n),  //*/ Asynchronous reset active low
+
+        // Data interface
+        .wr_en(1'b0),
+        .addr(mem_addr),
+        .rd_data(mem_rd_data),
+        .wr_data(8'b0),
+
+        // Callback interface
+        .en(mem_en),
+        .valid(mem_valid)
+    );
 
     // Instantiate the Unit Under Test (UUT)
     display_led_scanner uut (
@@ -39,27 +53,18 @@ module display_led_scanner_tb;
         .point_flicker_pos(point_flicker_pos), 
         .point_flicker_color(point_flicker_color), 
 
-        .color_flicker_en(0),
-        .color_flicker_color(0),
+        .color_flicker_en(1'b0),
+        .color_flicker_color(1'b0),
 
-        .ram_rd_addr(ram_rd_addr), 
-        .ram_data(ram_rd_data_out), 
+        .mem_busy(mem_busy),
+        .mem_en(mem_en),
+        .mem_valid(mem_valid),
+        .mem_addr(mem_addr),
+        .mem_data(mem_rd_data[1:0]),
 
         .led_row(led_row), 
         .led_col_red(led_col_red), 
         .led_col_green(led_col_green)
-    );
-
-    checkerboard_state_ram ram (
-        .clk(clk),
-
-        .wr_en(ram_we),
-
-        .wr_addr(ram_wr_addr),
-        .wr_data(ram_wr_data),
-
-        .rd_addr(ram_rd_addr),
-        .rd_data_out(ram_rd_data_out)
     );
 
     localparam TESTCASE_DATA_SIZE = 8 * 8 * 2;
@@ -109,18 +114,18 @@ module display_led_scanner_tb;
             #1;
             for (row = 0; row < 8; row = row + 1) begin
                 for (col = 0; col < 8; col = col + 1) begin
-                    ram.mem[row * 8 + col] = {data[(row * 8 + col) * 2 + 0], data[(row * 8 + col) * 2 + 1]};
+                    mem.mem[row * 8 + col] = {data[(row * 8 + col) * 2 + 0], data[(row * 8 + col) * 2 + 1]};
                 end
             end
         end
     endtask
 
     always #0.5 clk = ~clk;
-    always #10 scan_clk = ~scan_clk;
-    always #500 flicker_clk = ~flicker_clk;
+    always #60 scan_clk = ~scan_clk;
+    always #5000 flicker_clk = ~flicker_clk;
     initial begin
         // Initialize Inputs
-        scan_clk = 0;
+        scan_clk = 1;
         clk = 0;
         en = 0;
         rst_n = 0;
@@ -135,7 +140,7 @@ module display_led_scanner_tb;
         rst_n = 1;
         en = 1;
         // Wait 100 ns for global reset to finish
-        #1000;
+        #10000;
 
         // Clear memory
         write_testcase(testcase_empty);
@@ -143,17 +148,17 @@ module display_led_scanner_tb;
         point_flicker_color = `SIDE_RED;
         point_flicker_pos = {3'd2, 3'd2};
 
-        #4000;
+        #40000;
 
         point_flicker_color = `SIDE_GREEN;
         point_flicker_pos = {3'd0, 3'd7};
         
-        #4000;
+        #40000;
 
         point_flicker_color = `SIDE_RED;
         point_flicker_pos = {3'd7, 3'd7};
         
-        #4000;
+        #40000;
         
         $stop;
     end

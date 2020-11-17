@@ -17,8 +17,11 @@ module display_led_scanner (
     input color_flicker_en,
     input color_flicker_color,
 
-    output [5:0] ram_rd_addr,
-    input  [1:0] ram_data,
+    input        mem_busy,
+    output reg   mem_en,
+    input        mem_valid,
+    output [5:0] mem_addr,
+    input  [1:0] mem_data,
 
     output reg [7:0] led_row,
     output reg [7:0] led_col_red,
@@ -43,9 +46,9 @@ module display_led_scanner (
 
     wire flicker_state = flicker_clk;
 
-    reg [2:0] mem_read_bit;
+    reg [2:0] mem_read_i;
 
-    assign ram_rd_addr = {next_scan_row, mem_read_bit};
+    assign mem_addr = {next_scan_row, mem_read_i};
 
     always @(posedge scan_clk or negedge rst_n_) begin : proc_
         if (~rst_n_) begin
@@ -67,50 +70,73 @@ module display_led_scanner (
         end
     end
 
-    reg patched_ram_data_red, patched_ram_data_green;
+    reg patched_mem_data_red, patched_mem_data_green;
 
     always @(*) begin : proc_rd_patch
-        {patched_ram_data_red, patched_ram_data_green} = ram_data;
+        {patched_mem_data_red, patched_mem_data_green} = mem_data;
 
         if (screen_flicker_en) begin
-            patched_ram_data_red   = flicker_state ? 1'b1 : 1'b0;
-            patched_ram_data_green = flicker_state ? 1'b0 : 1'b1;
-        end else if (point_flicker_en && point_flicker_pos == {next_scan_row, mem_read_bit}) begin
+            patched_mem_data_red   = flicker_state ? 1'b1 : 1'b0;
+            patched_mem_data_green = flicker_state ? 1'b0 : 1'b1;
+        end else if (point_flicker_en && point_flicker_pos == {next_scan_row, mem_read_i}) begin
             if (point_flicker_color == `SIDE_RED) begin
-                patched_ram_data_red = flicker_state;
+                patched_mem_data_red = flicker_state;
             end else begin
-                patched_ram_data_green = flicker_state;
+                patched_mem_data_green = flicker_state;
             end
         end else if (color_flicker_en) begin
             if (color_flicker_color == `SIDE_RED) begin
-                if (ram_data[1]) patched_ram_data_red = flicker_state;
+                if (mem_data[1]) patched_mem_data_red = flicker_state;
             end else begin
-                if (ram_data[0]) patched_ram_data_green = flicker_state;
+                if (mem_data[0]) patched_mem_data_green = flicker_state;
             end
         end
     end
 
-    wire mem_read_bit_inc = mem_read_bit != 3'b111;
-    reg  mem_read_bit_inc_r;
+    // Memeroy read control
+    wire mem_read_done = mem_valid && mem_en;
+
+    wire continue_read = mem_read_i != 3'b111;
+    reg  continue_read_r;
+    reg  continue_read_rr;
     
-    always @(posedge clk or negedge rst_n_) begin : proc_mem_read_bit
+    always @(posedge clk or negedge rst_n_) begin : proc_mem_read_i
         if (~rst_n_) begin
-            mem_read_bit <= 0;
-            mem_read_bit_inc_r <= 0;
+            mem_read_i <= 0;
         end else begin
             if (frame_changed) begin // frame changed
-                mem_read_bit <= 0;
-            end else if (mem_read_bit_inc) begin
-                mem_read_bit <= mem_read_bit + 1'b1;
+                mem_read_i <= 0;
+            end else if (mem_read_done && continue_read) begin
+                mem_read_i <= mem_read_i + 1'b1;
             end
-            mem_read_bit_inc_r <= mem_read_bit_inc;
+        end
+    end
+
+    always @(posedge clk) begin : proc_continue_read_r
+        continue_read_r  <= continue_read;
+        continue_read_rr <= continue_read_r;
+    end
+
+    always @(posedge clk or negedge rst_n_) begin : proc_mem_en
+        if(~rst_n_) begin
+            mem_en <= 0;
+        end else begin
+            if (mem_en) begin
+                if (mem_valid) begin
+                    mem_en <= 0;
+                end
+            end else begin
+                if (continue_read_rr && ~mem_valid) begin
+                    mem_en <= 1;
+                end
+            end
         end
     end
 
     always @(posedge clk) begin : proc_store
-        if (mem_read_bit_inc || mem_read_bit_inc_r) begin
-            red_line_buffer   <= {patched_ram_data_red, red_line_buffer[7:1]};
-            green_line_buffer <= {patched_ram_data_green, green_line_buffer[7:1]};
+        if (mem_read_done) begin
+            red_line_buffer   <= {patched_mem_data_red, red_line_buffer[7:1]};
+            green_line_buffer <= {patched_mem_data_green, green_line_buffer[7:1]};
         end
     end
 endmodule

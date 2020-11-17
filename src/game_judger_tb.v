@@ -7,12 +7,8 @@ module game_judger_tb;
     reg clk;
     reg rst_n;
 
-    reg ram_we;
-    reg [5:0] ram_wr_addr;
-    reg [1:0] ram_wr_data;
-
-    wire [5:0] ram_rd_addr;
-    wire [1:0] ram_rd_data_out;
+    wire [5:0] mem_addr;
+    wire [7:0] mem_rd_data;
 
     reg       judger_en;
     reg       judger_color;
@@ -21,30 +17,35 @@ module game_judger_tb;
     wire [1:0] judger_result;
     wire judger_done;
 
-    checkerboard_state_ram ram (
-        .clk(clk),
+    spi_mem_emu mem(
+        .clk(clk),    ///* Clock
+        .rst_n(rst_n),  //*/ Asynchronous reset active low
 
-        .wr_en(ram_we),
+        // Data interface
+        .wr_en(1'b0),
+        .addr(mem_addr),
+        .rd_data(mem_rd_data),
+        .wr_data(8'b0),
 
-        .wr_addr(ram_wr_addr),
-        .wr_data(ram_wr_data),
-
-        .rd_addr(ram_rd_addr),
-        .rd_data_out(ram_rd_data_out)
+        // Callback interface
+        .en(mem_en),
+        .valid(mem_valid)
     );
 
     // Instantiate the Unit Under Test (UUT)
     game_judger uut (
         .clk(clk),
-        .en(judger_en),
-
         .rst_n(rst_n),
+
+        .en(judger_en),
 
         .color(judger_color),
         .pos(judger_pos),
 
-        .ram_rd_addr(ram_rd_addr),
-        .ram_data(ram_rd_data_out),
+        .mem_en(mem_en),
+        .mem_valid(mem_valid),
+        .mem_addr(mem_addr),
+        .mem_data(mem_rd_data[1:0]),
 
         .result(judger_result),
         .done(judger_done)
@@ -550,11 +551,11 @@ module game_judger_tb;
             exec_y = -1;
             exec_x = -1;
             // copy data to memory
-            // ram_we = 1;
+            // mem_we = 1;
             #1;
             for (row = 0; row < 8; row = row + 1) begin
                 for (col = 0; col < 8; col = col + 1) begin
-                    ram.mem[row * 8 + col] = {data[(row * 8 + col) * 3 + 1], data[(row * 8 + col) * 3 + 2]};
+                    mem.mem[row * 8 + col] = {data[(row * 8 + col) * 3 + 1], data[(row * 8 + col) * 3 + 2]};
                     if (data[(row * 8 + col) * 3 + 0]) begin
                         exec_x = col;
                         exec_y = row;
@@ -568,7 +569,6 @@ module game_judger_tb;
 
             @(posedge clk);
 
-            ram_we = 0;
             judger_pos = {exec_y[2:0], exec_x[2:0]};
             judger_color = color;
 
@@ -602,7 +602,6 @@ module game_judger_tb;
         rst_n = 0;
         judger_color = 0;
         judger_pos = 0;
-        ram_we = 0;
 
         // Wait 100 ns for global reset to finish
         #3;

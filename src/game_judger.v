@@ -9,8 +9,10 @@ module game_judger (
     input color,
     input [5:0] pos,
 
-    output [5:0] ram_rd_addr,
-    input  [1:0] ram_data,
+    output reg   mem_en,
+    input        mem_valid,
+    output [5:0] mem_addr,
+    input  [1:0] mem_data,
 
     output reg [1:0] result,
     output reg       done
@@ -18,7 +20,7 @@ module game_judger (
 
     localparam S_IDLE            = 2'b00;
     localparam S_TEST_OVERLAPSED = 2'b01;
-    localparam S_READ_MEM        = 2'b11;
+    localparam S_MAIN        = 2'b11;
     localparam S_WAIT            = 2'b10;
 
     localparam TYPE_HORIZONTAL   = 2'b00;
@@ -39,24 +41,26 @@ module game_judger (
     wire [2:0] pos_x, pos_y;
     assign {pos_y, pos_x} = pos;
 
-    reg [2:0] ram_rd_addr_x, ram_rd_addr_y;
-    assign ram_rd_addr = (state == S_TEST_OVERLAPSED) ? pos : {ram_rd_addr_y, ram_rd_addr_x};
+    reg [2:0] mem_rd_addr_x, mem_rd_addr_y;
+    assign mem_addr = (state == S_TEST_OVERLAPSED) ? pos : {mem_rd_addr_y, mem_rd_addr_x};
 
     wire pos_inc_reach_boarder =
-        (ram_rd_addr_x == 3'd7 && inc_x_r[2] == 0 && inc_x_r[1:0] != 0) || // right && inc_x_r > 0
-        (ram_rd_addr_y == 3'd7 && inc_y_r[2] == 0 && inc_y_r[1:0] != 0) || // bottom && inc_y_r > 0
-        (ram_rd_addr_y == 3'd0 && inc_y_r[2] == 1) || // top && inc_y_r < 0
+        (mem_rd_addr_x == 3'd7 && inc_x_r[2] == 0 && inc_x_r[1:0] != 0) || // right && inc_x_r > 0
+        (mem_rd_addr_y == 3'd7 && inc_y_r[2] == 0 && inc_y_r[1:0] != 0) || // bottom && inc_y_r > 0
+        (mem_rd_addr_y == 3'd0 && inc_y_r[2] == 1) || // top && inc_y_r < 0
         state == S_TEST_OVERLAPSED;
 
-    reg pos_inc_reach_boarder_r;
+    reg pos_inc_reach_boarder_last;
 
-    always @(posedge clk) begin : proc_pos_inc_reach_boarder_r
+    always @(posedge clk) begin : proc_pos_inc_reach_boarder_last
         if (~rst_n) begin
-            pos_inc_reach_boarder_r <= 0;
+            pos_inc_reach_boarder_last <= 0;
             inc_x_r <= 0;
             inc_y_r <= 0;
         end else begin
-            pos_inc_reach_boarder_r <= pos_inc_reach_boarder;
+            if (mem_valid && mem_en) begin
+                pos_inc_reach_boarder_last <= pos_inc_reach_boarder;
+            end
             inc_x_r <= inc_x;
             inc_y_r <= inc_y;
         end
@@ -79,18 +83,21 @@ module game_judger (
             S_IDLE:
                 if (en && ~done) next_state = S_TEST_OVERLAPSED;
             S_TEST_OVERLAPSED:
-                if (ram_data != 2'b00)
-                    next_state = S_IDLE;
-                else
-                    next_state = S_READ_MEM;
-            S_READ_MEM: begin
-                if (judge_type == LAST_JUDGE_TYPE && pos_inc_reach_boarder)
+                if (mem_valid/* && mem_en*/) begin
+                    if (mem_data != 2'b00)
+                        next_state = S_IDLE;
+                    else
+                        next_state = S_MAIN;
+                end
+            S_MAIN: begin
+                if (judge_type == LAST_JUDGE_TYPE && pos_inc_reach_boarder && (mem_valid && mem_en))
                     next_state = S_WAIT;
                 if (judger_win)
                     next_state = S_IDLE;
             end
-            S_WAIT:
-                next_state = S_IDLE;
+            S_WAIT: begin
+                next_state= S_IDLE;
+            end
             default:
                 next_state = S_IDLE;
         endcase
@@ -158,48 +165,67 @@ module game_judger (
     always @(*) begin : proc_next_judge_type
         if (next_state == S_TEST_OVERLAPSED)
             next_judge_type = FIRST_JUDGE_TYPE;
-        else if (state == S_READ_MEM && pos_inc_reach_boarder) // next judge type
+        else if (state == S_MAIN && pos_inc_reach_boarder && (mem_valid && mem_en)) // next judge type
             next_judge_type = judge_type + 1'b1;
         else
             next_judge_type = judge_type;
     end
 
     // Mem addr increment
-    always @(posedge clk or negedge rst_n) begin : proc_ram_rd_addr
+    always @(posedge clk or negedge rst_n) begin : proc_mem_rd_addr
         if (~rst_n) begin
-            {ram_rd_addr_y, ram_rd_addr_x} <= 0;
+            {mem_rd_addr_y, mem_rd_addr_x} <= 0;
         end else begin
-            // if (state == S_READ_MEM) begin
-            if (next_state == S_READ_MEM) begin
+            // if (state == S_MAIN) begin
+            if (next_state == S_MAIN && (mem_valid && mem_en)) begin
                 if (pos_inc_reach_boarder) begin
-                    ram_rd_addr_x <= start_x;
-                    ram_rd_addr_y <= start_y;
+                    mem_rd_addr_x <= start_x;
+                    mem_rd_addr_y <= start_y;
                 end else begin
-                    ram_rd_addr_x <= ram_rd_addr_x + inc_x;
-                    ram_rd_addr_y <= ram_rd_addr_y + inc_y;
+                    mem_rd_addr_x <= mem_rd_addr_x + inc_x;
+                    mem_rd_addr_y <= mem_rd_addr_y + inc_y;
                 end
             end
         end
     end
 
-    wire din_red   = ram_data[1]; // Data in - red
-    wire din_green = ram_data[0]; // Data in - green
+    wire din_red   = mem_data[1]; // Data in - red
+    wire din_green = mem_data[0]; // Data in - green
 
     wire mem_rd_color_matched = 
             (color == `SIDE_RED && din_red) || (color == `SIDE_GREEN && din_green);
 
-    wire inc_suc_count = state == S_READ_MEM && (mem_rd_color_matched || ram_rd_addr == pos);
+    wire inc_suc_count = state == S_MAIN && (mem_rd_color_matched || mem_addr == pos);
 
     always @(posedge clk or negedge rst_n) begin : proc_successive_count
         if (~rst_n) begin
             successive_count <= 0;
-        end else begin
-            case ({pos_inc_reach_boarder_r, inc_suc_count})
+        end else if (mem_valid && mem_en) begin
+            case ({pos_inc_reach_boarder_last, inc_suc_count})
                 2'b10:   successive_count <= 0;
                 2'b11:   successive_count <= 1'b1;
                 2'b01:   successive_count <= successive_count + 1'b1;
                 default: successive_count <= 0;
             endcase
+        end
+    end
+
+    // Mem read control
+    always @(posedge clk or negedge rst_n) begin : proc_mem_en
+        if(~rst_n) begin
+            mem_en <= 0;
+        end else begin
+            if (mem_en) begin
+                if (mem_valid) begin
+                    mem_en <= 0;
+                end
+            end else if (~mem_valid) begin
+                if (next_state != S_IDLE) begin
+                    mem_en <= 1;
+                end
+            end
+            // if (next_state == S_TEST_OVERLAPSED || )
+            // mem_en <= ;
         end
     end
 
@@ -214,7 +240,7 @@ module game_judger (
             end else if (state == S_TEST_OVERLAPSED && next_state == S_IDLE) begin
                 result <= `JUDGER_INVALID;
                 done <= 1;
-            end else if ((state == S_READ_MEM || state == S_WAIT) && next_state == S_IDLE) begin
+            end else if ((state == S_MAIN || state == S_WAIT) && next_state == S_IDLE) begin
                 result <= judger_win ? `JUDGER_WIN : `JUDGER_VALID;
                 done <= 1;
             end 

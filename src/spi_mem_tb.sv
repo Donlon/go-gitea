@@ -1,4 +1,5 @@
 `timescale 1us / 1ns
+`include "spi_mem_cmd.vh"
 
 module spi_mem_tb;
     // Inputs
@@ -6,7 +7,7 @@ module spi_mem_tb;
     reg rst_n;
 
     reg uut_en;
-    reg uut_wr_en;
+    reg  [1:0] uut_cmd;
     reg  [5:0] uut_addr;
     reg  [7:0] uut_wr_data;
     wire [7:0] uut_rd_data;
@@ -83,6 +84,17 @@ module spi_mem_tb;
                             end
                         endcase
                         spi_rx_bytes = spi_rx_bytes + 1;
+
+                        case (spi_op)
+                            FM25L16_OP_WREN:
+                                if (spi_rx_bytes == 1) begin
+                                    break;
+                                end
+                            FM25L16_OP_WRITE, FM25L16_OP_READ:
+                                if (spi_rx_bytes == 4) begin
+                                    break;
+                                end
+                        endcase
                     end
                     if (spi_rx_bytes == 3 && spi_op == FM25L16_OP_READ) begin
                         @(negedge spi_clk);
@@ -100,6 +112,31 @@ module spi_mem_tb;
         end
     end
 
+    task test_wren;
+        begin
+            wait (uut_en == 0 && uut_valid == 0);
+
+            @(posedge clk);
+            uut_en = 1;
+            uut_cmd = `CMD_WREN;
+
+            // Wait SPI operation to finish
+
+            wait(uut_valid == 1); // TODO: use fork-join task to capture timed-out event
+
+            @(posedge clk);
+
+            if (spi_op == FM25L16_OP_WREN) begin
+                $display("uut sent correct data");
+            end else begin
+                $display("[Error] uut sent incorrect data");
+                error_count = error_count + 1;
+            end
+            tested_count = tested_count + 1;
+            uut_en = 0;
+        end
+    endtask
+
     task test_write;
         input [5:0] addr;
         input [7:0] data;
@@ -108,7 +145,7 @@ module spi_mem_tb;
 
             @(posedge clk);
             uut_en = 1;
-            uut_wr_en = 1;
+            uut_cmd = `CMD_WRITE;
             uut_addr = addr;
             uut_wr_data = data;
 
@@ -129,7 +166,6 @@ module spi_mem_tb;
         end
     endtask
 
-
     task test_read;
         input [5:0] addr;
         input [7:0] expected;
@@ -138,7 +174,7 @@ module spi_mem_tb;
 
             @(posedge clk);
             uut_en = 1;
-            uut_wr_en = 0;
+            uut_cmd = `CMD_READ;
             uut_addr = addr;
 
             // Wait SPI operation to finish
@@ -163,7 +199,7 @@ module spi_mem_tb;
         .clk(clk),
         .rst_n(rst_n),
 
-        .wr_en(uut_wr_en),
+        .cmd(uut_cmd),
         .addr(uut_addr),
         .rd_data(uut_rd_data),
         .wr_data(uut_wr_data),
@@ -191,7 +227,7 @@ module spi_mem_tb;
         rst_n = 0;
 
         uut_en = 0;
-        uut_wr_en = 0;
+        uut_cmd = 0;
         uut_addr = 0;
         uut_wr_data = 0;
 
@@ -204,6 +240,8 @@ module spi_mem_tb;
         rst_n = 1;
 
         @(posedge clk);
+
+        test_wren();
 
         // Write tests
         for (i = 0; i < 100; i = i + 1) begin

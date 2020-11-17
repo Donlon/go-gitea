@@ -10,7 +10,7 @@ add wave -noupdate -expand -group Clock /gomoku_main_tb/uut/kb_scan_clk
 add wave -noupdate -expand -group Clock /gomoku_main_tb/uut/led_flicker_clk_slow
 add wave -noupdate -expand -group Clock /gomoku_main_tb/uut/led_flicker_clk_fast
 add wave -noupdate -expand -group Clock /gomoku_main_tb/uut/countdown_clk
-add wave -noupdate -expand -group {SPI mem} /gomoku_main_tb/uut/spi_mem_emu_inst/wr_en
+add wave -noupdate -expand -group {SPI mem} -expand /gomoku_main_tb/uut/spi_mem_emu_inst/cmd
 add wave -noupdate -expand -group {SPI mem} /gomoku_main_tb/uut/spi_mem_emu_inst/addr
 add wave -noupdate -expand -group {SPI mem} /gomoku_main_tb/uut/spi_mem_emu_inst/rd_data
 add wave -noupdate -expand -group {SPI mem} /gomoku_main_tb/uut/spi_mem_emu_inst/wr_data

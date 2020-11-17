@@ -1,5 +1,6 @@
 `include "common.vh"
 `include "game_judger.vh"
+`include "spi_mem_cmd.vh"
 
 module gomoku_main(
     input clk,
@@ -78,7 +79,7 @@ module gomoku_main(
 
     reg [2:0] state, next_state;
 
-    reg  mem_wr_en;
+    reg  [1:0] mem_cmd;
     reg  [5:0] mem_addr;
     wire [7:0] mem_rd_data;
     reg  [1:0] mem_wr_data;
@@ -92,7 +93,7 @@ module gomoku_main(
         .rst_n(rst_n),  // Asynchronous reset active low
 
         // Data interface
-        .wr_en(mem_wr_en),
+        .cmd(mem_cmd),
         .addr(mem_addr),
         .rd_data(mem_rd_data),
         .wr_data(mem_wr_data),
@@ -113,7 +114,7 @@ module gomoku_main(
         .rst_n(rst_n),  //*/ Asynchronous reset active low
 
         // Data interface
-        .wr_en(mem_wr_en),
+        .cmd(mem_cmd),
         .addr(mem_addr),
         .rd_data(mem_rd_data),
         .wr_data({6'b0, mem_wr_data}),
@@ -127,7 +128,7 @@ module gomoku_main(
     // Mem write
     reg mw_mem_en;
     reg mw_mem_valid;
-    reg [5:0] mw_mem_addr;
+    wire [5:0] mw_mem_addr;
     reg [1:0] mw_mem_wr_data;
 
     // === Mem reset ===
@@ -135,6 +136,7 @@ module gomoku_main(
     wire memrst_done;
     wire memrst_we;
 
+    wire memrst_cmd;
     wire memrst_mem_en;
     reg  memrst_mem_valid;
     wire [5:0] memrst_mem_addr;
@@ -145,6 +147,7 @@ module gomoku_main(
         .en(memrst_en), // Clock Enable
         .rst_n(rst_n),  // Asynchronous reset active low
 
+        .mem_cmd(memrst_cmd),
         .mem_en(memrst_mem_en),
         .mem_valid(memrst_mem_valid),
         .mem_addr(memrst_mem_addr),
@@ -537,7 +540,7 @@ module gomoku_main(
 
     // Memory read/write mux/demux
     always @(*) begin : proc_ram_write
-        mem_wr_en = 0;
+        mem_cmd = `CMD_READ;
         mem_en = 0;
         mem_addr = 0;
         mem_wr_data = 0;
@@ -548,26 +551,26 @@ module gomoku_main(
         mw_mem_valid = 0;
         case (state)
             S_RESET_STATE: begin
-                mem_wr_en = 1;
+                mem_cmd = memrst_cmd;
                 mem_en = memrst_mem_en;
                 mem_addr = memrst_mem_addr;
                 mem_wr_data = memrst_mem_wr_data;
                 memrst_mem_valid = mem_valid;
             end
             S_WAIT_INPUT: begin
-                mem_wr_en = 0;
+                mem_cmd = `CMD_READ;
                 mem_en = scanner_mem_en;
                 mem_addr = scanner_mem_addr;
                 scanner_mem_valid = mem_valid;
             end
             S_JUDGE: begin
-                mem_wr_en = 0;
+                mem_cmd = `CMD_READ;
                 mem_en = judger_mem_en;
                 mem_addr = judger_mem_addr;
                 judger_mem_valid = mem_valid;
             end
             S_MEM_WRITE: begin
-                mem_wr_en = 1;
+                mem_cmd = `CMD_WRITE;
                 mem_en = mw_mem_en;
                 mem_addr = mw_mem_addr;
                 mem_wr_data = mw_mem_wr_data;

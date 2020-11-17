@@ -1,10 +1,13 @@
+`include "spi_mem_cmd.vh"
+
 module mem_reset (
     input clk,    // Clock
     input en, // Clock Enable
     input rst_n,  // Asynchronous reset active low
 
+    output reg [1:0] mem_cmd,
     output reg mem_en,
-    input  reg mem_valid,
+    input      mem_valid,
     output reg [5:0] mem_addr,
     output     [1:0] mem_data,
 
@@ -13,25 +16,38 @@ module mem_reset (
 
     assign mem_data = 0;
 
-    localparam S_IDLE    = 1'b0;
-    localparam S_WORKING = 1'b1;
+    localparam S_IDLE    = 2'd0;
+    localparam S_WREN    = 2'd1;
+    localparam S_WORKING = 2'd2;
 
-    reg [0:0] state, next_state;
+    reg [1:0] state, next_state;
 
     always @(*) begin : proc_next_state
-        next_state <= S_IDLE;
+        next_state = state;
 
         case (state)
             S_IDLE:
                 if (en && ~done)
-                    next_state <= S_WORKING;
+                    next_state = S_WREN;
+            S_WREN:
+                if (mem_valid && mem_en) begin
+                    next_state = S_WORKING;
+                end
             S_WORKING:
                 if (mem_addr == 6'b111111 && mem_valid && mem_en) begin
-                    next_state <= S_IDLE;
+                    next_state = S_IDLE;
                 end else begin
-                    next_state <= S_WORKING;
+                    next_state = S_WORKING;
                 end
         endcase
+    end
+
+    always @(*) begin : proc_mem_cmd
+        if (state == S_WREN) begin
+            mem_cmd = `CMD_WREN;
+        end else begin
+            mem_cmd = `CMD_WRITE;
+        end
     end
 
     always @(posedge clk or negedge rst_n) begin : proc_state
@@ -72,7 +88,7 @@ module mem_reset (
                     mem_en <= 0;
                 end
             end else begin
-                if (next_state == S_WORKING && ~mem_valid) begin
+                if ((next_state == S_WREN || next_state == S_WORKING) && ~mem_valid) begin
                     mem_en <= 1;
                 end
             end

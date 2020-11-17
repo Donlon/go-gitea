@@ -1,10 +1,12 @@
+`include "spi_mem_cmd.vh"
+
 module spi_mem (
     input clk,    // Clock
     input rst_n,  // Asynchronous reset active low
 
     // Data interface
-    input            wr_en,
-    input  [5:0]     addr,
+    input [1:0]      cmd,
+    input [5:0]      addr,
     output reg [7:0] rd_data,
     input      [7:0] wr_data,
 
@@ -19,10 +21,12 @@ module spi_mem (
     output reg valid
 );
 
-    localparam FM25L16_OP_WRITE = 8'b00000010;
-    localparam FM25L16_OP_READ  = 8'b00000011;
-
-    wire rd_en = ~wr_en;
+    localparam FM25L16_OP_WREN     = 8'b0000_0110;
+    localparam FM25L16_OP_WRDI     = 8'b0000_0100;
+    localparam FM25L16_OP_RDSR     = 8'b0000_0101;
+    localparam FM25L16_OP_WRSR     = 8'b0000_0001;
+    localparam FM25L16_OP_READ     = 8'b0000_0011;
+    localparam FM25L16_OP_WRITE    = 8'b0000_0010;
     
     // wire spi_clk_rising;
     // wire spi_clk_falling;
@@ -41,11 +45,16 @@ module spi_mem (
     reg [7:0] fm25l16_op;
 
     always @(*) begin : proc_fm25l16_op
-        if (rd_en) begin
-            fm25l16_op = FM25L16_OP_READ;
-        end else begin
-            fm25l16_op = FM25L16_OP_WRITE;
-        end
+        case (cmd)
+            `CMD_READ:
+                fm25l16_op = FM25L16_OP_READ;
+            `CMD_WRITE:
+                fm25l16_op = FM25L16_OP_WRITE;
+            `CMD_WREN:
+                fm25l16_op = FM25L16_OP_WREN;
+            default:
+                fm25l16_op = 0;
+        endcase
     end
 
     always @(*) begin : proc_load_data
@@ -53,7 +62,7 @@ module spi_mem (
             2'd0:    spi_tx_byte = fm25l16_op;
             2'd1:    spi_tx_byte = 0;
             2'd2:    spi_tx_byte = {2'b0, addr};
-            2'd3:    spi_tx_byte = rd_en ? 8'b0 : wr_data;
+            2'd3:    spi_tx_byte = cmd == `CMD_WRITE ? wr_data : 8'b0;
             default: spi_tx_byte = 0;
         endcase
     end
@@ -90,18 +99,20 @@ module spi_mem (
                 if (en && ~valid)
                     next_state = S_WRITE;
             S_WRITE:
-                if (rd_en) begin
-                    if (byte_count == 3 && bit_count == 7) begin
-                        next_state = S_READ;
-                    end
-                end else begin
-                    // if (byte_count == 3 && bit_count == 7) begin
-                    //     next_state = S_IDLE;
-                    // end
-                    if (byte_count == 4 && bit_count == 0) begin
-                        next_state = S_IDLE;
-                    end
-                end
+                case (cmd)
+                    `CMD_WREN:
+                        if (byte_count == 1 && bit_count == 0) begin
+                            next_state = S_IDLE;
+                        end
+                    `CMD_WRITE:
+                        if (byte_count == 4 && bit_count == 0) begin
+                            next_state = S_IDLE;
+                        end
+                    `CMD_READ:
+                        if (byte_count == 3 && bit_count == 7) begin
+                            next_state = S_READ;
+                        end
+                endcase
             S_READ:
                 if (byte_count == 4 && bit_count == 0) begin
                     next_state = S_IDLE;

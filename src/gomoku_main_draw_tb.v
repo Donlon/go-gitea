@@ -75,7 +75,7 @@ module gomoku_main_draw_tb;
         is_key_pressed <= 0;
     endtask
 
-    task task_enter_position(integer x, integer y);
+    task task_enter_position(input integer x, input integer y);
         begin
             task_press_key(x[2:0] + 8);
             #50 task_key_up();

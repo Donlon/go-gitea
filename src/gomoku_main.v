@@ -36,6 +36,14 @@ module gomoku_main(
     output reg [3:0] red_win_count,
     output reg [3:0] green_win_count,
 
+    // SPI interface
+`ifndef SPI_MEM_EMU
+    output spi_clk,
+    output spi_cs,
+    input  spi_si,
+    output spi_so,
+`endif
+
     // keyboard
     output [3:0] keyboard_col,
     input  [3:0] keyboard_row,
@@ -57,6 +65,7 @@ module gomoku_main(
     // Control signals
     wire s_judge_finish;
     wire game_draw = piece_count == 6'd63;
+    reg  timed_out;
 
     // FSM
     localparam S_STOPPED     = 3'd0;
@@ -64,49 +73,82 @@ module gomoku_main(
     localparam S_RESET_STATE = 3'd2;
     localparam S_WAIT_INPUT  = 3'd3;
     localparam S_JUDGE       = 3'd4;
-    localparam S_END         = 3'd5;
+    localparam S_MEM_WRITE   = 3'd5;
+    localparam S_END         = 3'd6;
 
     reg [2:0] state, next_state;
 
-    // === RAM signals ===
-    reg ram_we;
-    reg [5:0] ram_wr_addr;
-    reg [1:0] ram_wr_data;
+    reg  mem_wr_en;
+    reg  [5:0] mem_addr;
+    wire [7:0] mem_rd_data;
+    reg  [1:0] mem_wr_data;
 
-    reg  [5:0] ram_rd_addr;
-    wire [1:0] ram_rd_data;
+    reg  mem_en;
+    wire mem_valid;
 
-    checkerboard_state_ram #(
-        .DATA_BITS(2),
-        .EDGE_ADDR_BITS(3) // 8x8 checkerboard
-    )
-    ram_inst (
-        .clk(clk),
-        .wr_en(ram_we),
+`ifndef SPI_MEM_EMU
+    spi_mem spi_mem_inst(
+        .clk(clk),    // Clock
+        .rst_n(rst_n),  // Asynchronous reset active low
 
-        .wr_addr(ram_wr_addr),
-        .wr_data(ram_wr_data),
+        // Data interface
+        .wr_en(mem_wr_en),
+        .addr(mem_addr),
+        .rd_data(mem_rd_data),
+        .wr_data(mem_wr_data),
 
-        .rd_addr(ram_rd_addr),
-        .rd_data_out(ram_rd_data)
+        // SPI interface
+        .spi_clk(spi_clk),
+        .spi_cs(spi_cs),
+        .spi_si(spi_si),
+        .spi_so(spi_so),
+
+        // Callback interface
+        .en(mem_en),
+        .valid(mem_valid)
     );
+`else
+    spi_mem_emu spi_mem_emu_inst(
+        .clk(clk),    ///* Clock
+        .rst_n(rst_n),  //*/ Asynchronous reset active low
+
+        // Data interface
+        .wr_en(mem_wr_en),
+        .addr(mem_addr),
+        .rd_data(mem_rd_data),
+        .wr_data({6'b0, mem_wr_data}),
+
+        // Callback interface
+        .en(mem_en),
+        .valid(mem_valid)
+    );
+`endif
+
+    // Mem write
+    reg mw_mem_en;
+    reg mw_mem_valid;
+    reg [5:0] mw_mem_addr;
+    reg [1:0] mw_mem_wr_data;
 
     // === Mem reset ===
     wire memrst_en;
     wire memrst_done;
     wire memrst_we;
 
-    wire [5:0] memrst_addr;
-    wire [1:0] memrst_data;
+    wire memrst_mem_en;
+    reg  memrst_mem_valid;
+    wire [5:0] memrst_mem_addr;
+    wire [1:0] memrst_mem_wr_data;
 
     mem_reset memrst_inst(
         .clk(clk),
         .en(memrst_en), // Clock Enable
         .rst_n(rst_n),  // Asynchronous reset active low
 
-        .ram_we(memrst_we),
-        .ram_addr(memrst_addr),
-        .ram_data(memrst_data),
+        .mem_en(memrst_mem_en),
+        .mem_valid(memrst_mem_valid),
+        .mem_addr(memrst_mem_addr),
+        .mem_data(memrst_mem_wr_data),
 
         .done(memrst_done)
     );
@@ -125,8 +167,11 @@ module gomoku_main(
     reg led_color_flicker_en;
     reg led_color_flicker_color;
 
-    wire [5:0] scanner_rd_addr;
-    reg  [1:0] scanner_rd_data;
+    wire scanner_mem_busy;
+    wire scanner_mem_en;
+    reg  scanner_mem_valid;
+    wire [5:0] scanner_mem_addr;
+    wire [1:0] scanner_mem_rd_data = mem_rd_data[1:0];
 
     display_led_scanner scanner_inst(
         .clk(clk),
@@ -145,8 +190,11 @@ module gomoku_main(
         .color_flicker_en(color_flicker_en),
         .color_flicker_color(color_flicker_color),
 
-        .ram_rd_addr(scanner_rd_addr),
-        .ram_data(scanner_rd_data),
+        .mem_busy(scanner_mem_busy),
+        .mem_en(scanner_mem_en),
+        .mem_valid(scanner_mem_valid),
+        .mem_addr(scanner_mem_addr),
+        .mem_data(scanner_mem_rd_data),
 
         .led_row(led_row),
         .led_col_red(led_col_red),
@@ -183,7 +231,19 @@ module gomoku_main(
     end
 
     // capture key-down (lo to hi transition) event only
-    wire btn_ok_down = btn_ok_rr == 0 && btn_ok_r == 1;
+    reg btn_ok_down;
+    always @(posedge clk or negedge rst_n) begin : proc_btn_ok_down
+        if(~rst_n) begin
+            btn_ok_down <= 0;
+        end else begin
+            if (state == S_WAIT_INPUT) begin
+                btn_ok_down <= btn_ok_down || (btn_ok_rr == 0 && btn_ok_r == 1);
+            end else begin
+                btn_ok_down <= 0;
+            end
+        end
+    end
+    // wire btn_ok_down = btn_ok_rr == 0 && btn_ok_r == 1;
 
     // === Judger signals ===
     wire judger_en;
@@ -191,8 +251,10 @@ module gomoku_main(
     wire [1:0] judger_result;
     wire       judger_done;
 
-    wire [5:0] judger_rd_addr;
-    reg  [1:0] judger_rd_data;
+    wire judger_mem_en;
+    reg  judger_mem_valid;
+    wire [5:0] judger_mem_addr;
+    wire [1:0] judger_mem_rd_data = mem_rd_data[1:0];
 
     game_judger judger_inst(
         .clk(clk),    // Clock
@@ -202,8 +264,10 @@ module gomoku_main(
         .color(current_active_side),
         .pos(pos),
 
-        .ram_rd_addr(judger_rd_addr),
-        .ram_data(judger_rd_data),
+        .mem_en(judger_mem_en),
+        .mem_valid(judger_mem_valid),
+        .mem_addr(judger_mem_addr),
+        .mem_data(judger_mem_rd_data),
 
         .result(judger_result),
         .done(judger_done)
@@ -219,11 +283,6 @@ module gomoku_main(
 
         .buzzer_out(buzzer_out)
     );
-
-    // Countdown logic
-    assign countdown_en = state == S_WAIT_INPUT;
-    wire countdown_next = countdown_clk == 1 && countdown_clk_r == 0;
-    wire timed_out = countdown_next && num_countdown_h == 0 && num_countdown_l == 0;
 
     // FSM logic
     always @(posedge clk or negedge rst_n) begin : proc_state
@@ -244,7 +303,7 @@ module gomoku_main(
             S_RESET_STATE:
                 if (memrst_done) next_state = S_WAIT_INPUT;
             S_WAIT_INPUT: begin
-                if (presseed_keys == 2'b11 && (btn_ok_down || timed_out)) begin
+                if (presseed_keys == 2'b11 && (btn_ok_down || timed_out) && ~scanner_mem_en) begin
                     // btn_ok_down: both x and y pos were input
                     // timed_out:   timed-out and auto commit
                     next_state = S_JUDGE;
@@ -253,13 +312,26 @@ module gomoku_main(
             S_JUDGE:
                 if (judger_done) begin
                     if (judger_result == `JUDGER_WIN) begin
-                        next_state = S_END;
+                        next_state = S_MEM_WRITE;
                     end else if (game_draw && judger_result == `JUDGER_VALID) begin
+                        next_state = S_MEM_WRITE;
+                    end else begin
+                        if (judger_result == `JUDGER_VALID) begin
+                            next_state = S_MEM_WRITE;
+                        end else begin
+                            next_state = S_WAIT_INPUT;
+                        end
+                    end
+                end
+            S_MEM_WRITE: begin
+                if (mw_mem_valid && mw_mem_en) begin
+                    if (judger_result == `JUDGER_WIN || (game_draw && judger_result == `JUDGER_VALID)) begin
                         next_state = S_END;
                     end else begin
                         next_state = S_WAIT_INPUT;
                     end
                 end
+            end
             S_END:
                 next_state = S_END;
             default:
@@ -311,8 +383,10 @@ module gomoku_main(
             if (state == S_RESET_STATE) begin
                 current_active_side <= `SIDE_RED;
                 piece_count <= 0;
-            end else if (timed_out && next_state == S_WAIT_INPUT) begin
+
+            end else if (timed_out && presseed_keys != 2'b11 && next_state == S_WAIT_INPUT) begin
                 current_active_side <= ~current_active_side;
+
             end if (s_judge_finish && judger_result != `JUDGER_WIN) begin
                 current_active_side <= ~current_active_side;
                 if (judger_result == `JUDGER_VALID && ~game_draw) begin
@@ -344,8 +418,26 @@ module gomoku_main(
         end
     end
 
-    // Countdown LED
+    // Countdown logic
     reg countdown_clk_r;
+    assign countdown_en = state == S_WAIT_INPUT;
+    wire countdown_next = countdown_clk == 1 && countdown_clk_r == 0;
+    
+    always @(posedge clk or negedge rst_n) begin : proc_timed_out
+        if(~rst_n) begin
+            timed_out <= 0;
+        end else begin
+            if (state == S_WAIT_INPUT) begin
+                timed_out <= timed_out || (countdown_next && num_countdown_h == 0 && num_countdown_l == 0);
+                if (presseed_keys != 2'b11 && timed_out) begin
+                    timed_out <= 0;
+                end
+            end else begin
+                timed_out <= 0;
+            end
+        end
+    end
+
     always @(posedge clk) begin : proc_countdown_clk_r
         countdown_clk_r <= countdown_clk;
     end
@@ -443,45 +535,66 @@ module gomoku_main(
     // Mem reset
     assign memrst_en = state == S_RESET_STATE;
 
-    // RAM write mux
-    reg ram_we_0;
-    reg [1:0] ram_wr_data_0;
+    // Memory read/write mux/demux
     always @(*) begin : proc_ram_write
-        if (state == S_RESET_STATE) begin
-            ram_we = memrst_we;
-            ram_wr_addr = memrst_addr;
-            ram_wr_data = memrst_data;
-        end else begin
-            ram_we = ram_we_0;
-            ram_wr_addr = pos;
-            ram_wr_data = ram_wr_data_0;
-        end
+        mem_wr_en = 0;
+        mem_en = 0;
+        mem_addr = 0;
+        mem_wr_data = 0;
+
+        memrst_mem_valid = 0;
+        scanner_mem_valid = 0;
+        judger_mem_valid = 0;
+        mw_mem_valid = 0;
+        case (state)
+            S_RESET_STATE: begin
+                mem_wr_en = 1;
+                mem_en = memrst_mem_en;
+                mem_addr = memrst_mem_addr;
+                mem_wr_data = memrst_mem_wr_data;
+                memrst_mem_valid = mem_valid;
+            end
+            S_WAIT_INPUT: begin
+                mem_wr_en = 0;
+                mem_en = scanner_mem_en;
+                mem_addr = scanner_mem_addr;
+                scanner_mem_valid = mem_valid;
+            end
+            S_JUDGE: begin
+                mem_wr_en = 0;
+                mem_en = judger_mem_en;
+                mem_addr = judger_mem_addr;
+                judger_mem_valid = mem_valid;
+            end
+            S_MEM_WRITE: begin
+                mem_wr_en = 1;
+                mem_en = mw_mem_en;
+                mem_addr = mw_mem_addr;
+                mem_wr_data = mw_mem_wr_data;
+                mw_mem_valid = mem_valid;
+            end
+        endcase
     end
 
-    // RAM read mux/demux
-    always @(*) begin : proc_
-        if (state == S_WAIT_INPUT || state == S_END) begin
-            ram_rd_addr     = scanner_rd_addr;
-            scanner_rd_data = ram_rd_data;
-            judger_rd_data  = 0;
-        end else begin
-            ram_rd_addr     = judger_rd_addr;
-            scanner_rd_data = 0;
-            judger_rd_data  = ram_rd_data;
-        end
-    end
+    assign scanner_mem_busy = next_state != S_WAIT_INPUT;
 
     // RAM writing
+    assign mw_mem_addr = pos;
     always @(posedge clk or negedge rst_n) begin : proc_ram_we
         if (~rst_n) begin
-            ram_we_0 <= 0;
-            ram_wr_data_0 <= 0; 
+            mw_mem_en <= 0;
+            mw_mem_wr_data <= 0; 
         end else begin
-            if (s_judge_finish && (judger_result == `JUDGER_VALID || judger_result == `JUDGER_WIN)) begin
-                ram_we_0 <= 1; // write pos to mem
-                ram_wr_data_0 <= current_active_side ? 2'b10 : 2'b01;
+            if (mw_mem_en) begin
+                if (mw_mem_valid) begin
+                    mw_mem_en <= 0;
+                end
             end else begin
-                ram_we_0 <= 0;
+                // write pos to mem
+                if (s_judge_finish && (judger_result == `JUDGER_VALID || judger_result == `JUDGER_WIN)) begin
+                    mw_mem_en <= 1;
+                    mw_mem_wr_data <= current_active_side ? 2'b10 : 2'b01;
+                end
             end
         end
     end

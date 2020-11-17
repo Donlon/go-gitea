@@ -21,6 +21,11 @@ module top_maxii(
     output [7:0] led_col_red,
     output [7:0] led_col_green,
 
+    output spi_clk,
+    output spi_cs,
+    input  spi_si,
+    output spi_so,
+
     // keyboard
     output [3:0] keyboard_col,
     input  [3:0] keyboard_row
@@ -34,20 +39,6 @@ module top_maxii(
 
     wire key_reset_deb;
     wire key_ok_deb;
-
-    key_debounce debouncer_1(
-        .key(key_reset),
-        .clk(key_debounce_clk),
-        .rst_n(rst_n),
-        .key_debounced(key_reset_deb)
-    );
-
-    key_debounce debouncer_2(
-        .key(key_ok),
-        .clk(key_debounce_clk),
-        .rst_n(rst_n),
-        .key_debounced(key_ok_deb)
-    );
 
     // LEDs
     wire led_red_status;
@@ -85,8 +76,7 @@ module top_maxii(
 
     clock_gen #(
         .IN_FREQ(1000000) // 1M
-    )
-    clock_gen_inst(
+    ) clock_gen_inst(
         .clk_in(clk),
         .rst_n(rst_n),  // Asynchronous reset active low
 
@@ -98,6 +88,20 @@ module top_maxii(
 
         .clk_2Hz_rst(led_flicker_clk_rst),
         .clk_1Hz_rst(countdown_clk_rst)
+    );
+
+    key_debounce debouncer_1(
+        .key(key_reset),
+        .clk(key_debounce_clk),
+        .rst_n(rst_n),
+        .key_debounced(key_reset_deb)
+    );
+
+    key_debounce debouncer_2(
+        .key(key_ok),
+        .clk(key_debounce_clk),
+        .rst_n(rst_n),
+        .key_debounced(key_ok_deb)
     );
 
     gomoku_main main(
@@ -133,6 +137,11 @@ module top_maxii(
         .countdown_en(countdown_en),
         .red_win_count(red_win_count),
         .green_win_count(green_win_count),
+
+        .spi_clk(spi_clk),
+        .spi_cs(spi_cs),
+        .spi_si(spi_si),
+        .spi_so(spi_so),
 
         // keyboard
         .keyboard_row(keyboard_row),

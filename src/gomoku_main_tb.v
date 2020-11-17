@@ -23,6 +23,7 @@ module gomoku_main_tb;
     wire led_green_status;
     wire [3:0] num_countdown_h;
     wire [3:0] num_countdown_l;
+    wire countdown_en;
     wire [3:0] red_win_count;
     wire [3:0] green_win_count;
     wire [7:0] led_row;
@@ -75,7 +76,7 @@ module gomoku_main_tb;
         is_key_pressed <= 0;
     endtask
 
-    task task_enter_position(integer x, integer y);
+    task task_enter_position(input integer x, input integer y);
         begin
             task_press_key(x[2:0] + 8);
             #1000 task_key_up();
@@ -92,7 +93,7 @@ module gomoku_main_tb;
         end
     endtask
 
-    task task_enter_position_no_commit(integer x, integer y);
+    task task_enter_position_no_commit(input integer x, input integer y);
         begin
             task_press_key(x[2:0] + 8);
             #1000 task_key_up();
@@ -143,6 +144,7 @@ module gomoku_main_tb;
         .led_col_green(led_col_green),
         .num_countdown_h(num_countdown_h),
         .num_countdown_l(num_countdown_l),
+        .countdown_en(countdown_en),
         .red_win_count(red_win_count),
         .green_win_count(green_win_count), 
         .keyboard_row(keyboard_row), 
@@ -154,16 +156,16 @@ module gomoku_main_tb;
 
     always #0.5 clk = ~clk;
     always #25 buzzer_clk = ~buzzer_clk;
-    always #25 led_scan_clk = ~led_scan_clk;
+    always #40 led_scan_clk = ~led_scan_clk;
     always #25 kb_scan_clk = ~kb_scan_clk;
 
     always #1000 countdown_clk        = ~countdown_clk;
     always #1000 led_flicker_clk_slow = ~led_flicker_clk_slow;
-    always #1500 led_flicker_clk_fast = ~led_flicker_clk_fast;
+    // always #1500 led_flicker_clk_fast = ~led_flicker_clk_fast;
 
     always @(posedge led_flicker_clk_rst) begin : proc_led_flicker_clk_rst
-        led_flicker_clk_slow = 0;
-        led_flicker_clk_fast = 0;
+        led_flicker_clk_slow = 1;
+        led_flicker_clk_fast = 1;
     end
 
     always @(posedge countdown_clk_rst) begin : proc_countdown_clk_rst
@@ -176,8 +178,8 @@ module gomoku_main_tb;
         led_scan_clk = 0;
         kb_scan_clk = 0;
         countdown_clk = 0;
-        led_flicker_clk_slow = 0;
-        led_flicker_clk_fast = 0;
+        led_flicker_clk_slow = 1;
+        led_flicker_clk_fast = 1;
         rst_n = 0;
         sw_power = 0;
         btn_reset = 0;
